@@ -1,5 +1,6 @@
 package com.ajousw.spring.domain.navigation.route;
 
+import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
 import com.ajousw.spring.domain.vehicle.Vehicle;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -23,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class NavigationPath {
+public class NavigationPath extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

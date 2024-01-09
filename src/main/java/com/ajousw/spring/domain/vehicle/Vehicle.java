@@ -1,6 +1,7 @@
 package com.ajousw.spring.domain.vehicle;
 
 import com.ajousw.spring.domain.member.Member;
+import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Vehicle {
+public class Vehicle extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

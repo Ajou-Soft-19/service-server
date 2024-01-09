@@ -38,16 +38,16 @@ public class VehicleStatus {
 
     private int direction;
 
-    private LocalDateTime lastLoginTime;
+    private LocalDateTime lastUpdateTime;
 
     @Builder
     public VehicleStatus(Vehicle vehicle, boolean usingNavi, double latitude, double longitude, int kmPerHour,
-                         int direction, LocalDateTime lastLoginTime) {
+                         int direction, LocalDateTime lastUpdateTime) {
         this.vehicle = vehicle;
         this.usingNavi = usingNavi;
         this.mapLocation = new MapLocation(latitude, longitude);
         this.kmPerHour = kmPerHour;
         this.direction = direction;
-        this.lastLoginTime = lastLoginTime;
+        this.lastUpdateTime = lastUpdateTime;
     }
 }
