@@ -3,14 +3,18 @@ package com.ajousw.spring.domain.member;
 import com.ajousw.spring.domain.member.enums.LoginType;
 import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
+import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import lombok.AccessLevel;
@@ -43,6 +47,9 @@ public class Member extends BaseTimeEntity {
     private String roles;
 
     private LocalDateTime lastLoginTime;
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+    private List<Vehicle> vehicles = new ArrayList<>();
 
     public void updateLastLoginTime() {
         this.lastLoginTime = LocalDateTime.now();
