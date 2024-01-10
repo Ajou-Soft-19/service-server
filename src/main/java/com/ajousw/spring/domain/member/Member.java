@@ -3,7 +3,7 @@ package com.ajousw.spring.domain.member;
 import com.ajousw.spring.domain.member.enums.LoginType;
 import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
-import com.ajousw.spring.domain.vehicle.Vehicle;
+import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

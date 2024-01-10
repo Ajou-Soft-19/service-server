@@ -1,7 +1,8 @@
-package com.ajousw.spring.domain.vehicle;
+package com.ajousw.spring.domain.vehicle.entity;
 
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
+import com.ajousw.spring.domain.vehicle.VehicleType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;

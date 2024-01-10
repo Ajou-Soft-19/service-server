@@ -1,6 +1,5 @@
-package com.ajousw.spring.domain.navigation.route;
+package com.ajousw.spring.domain.navigation.route.entity;
 
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -16,25 +15,29 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PathPoint {
+public class PathGuide {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID pathPointId;
+    private UUID pathGuideId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "navigation_path_id")
     private NavigationPath navigationPath;
 
-    private Long index;
+    private Long pointIndex;
 
-    @Embedded
-    private MapLocation location;
+    private Long type;
 
-    public PathPoint(NavigationPath navigationPath, Long index, double latitude, double longitude) {
+    private Long distance;
+
+    private Long duration;
+
+    public PathGuide(NavigationPath navigationPath, Long pointIndex, Long type, Long distance, Long duration) {
         this.navigationPath = navigationPath;
-        this.index = index;
-        this.location = new MapLocation(latitude, longitude);
+        this.pointIndex = pointIndex;
+        this.type = type;
+        this.distance = distance;
+        this.duration = duration;
     }
-
 }

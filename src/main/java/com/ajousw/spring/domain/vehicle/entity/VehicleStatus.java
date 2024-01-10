@@ -1,6 +1,6 @@
-package com.ajousw.spring.domain.vehicle;
+package com.ajousw.spring.domain.vehicle.entity;
 
-import com.ajousw.spring.domain.navigation.route.MapLocation;
+import com.ajousw.spring.domain.navigation.route.entity.MapLocation;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -44,6 +44,15 @@ public class VehicleStatus {
     public VehicleStatus(Vehicle vehicle, boolean usingNavi, double latitude, double longitude, int kmPerHour,
                          int direction, LocalDateTime lastUpdateTime) {
         this.vehicle = vehicle;
+        this.usingNavi = usingNavi;
+        this.mapLocation = new MapLocation(latitude, longitude);
+        this.kmPerHour = kmPerHour;
+        this.direction = direction;
+        this.lastUpdateTime = lastUpdateTime;
+    }
+
+    public void modifyStatus(boolean usingNavi, double latitude, double longitude, int kmPerHour,
+                             int direction, LocalDateTime lastUpdateTime) {
         this.usingNavi = usingNavi;
         this.mapLocation = new MapLocation(latitude, longitude);
         this.kmPerHour = kmPerHour;

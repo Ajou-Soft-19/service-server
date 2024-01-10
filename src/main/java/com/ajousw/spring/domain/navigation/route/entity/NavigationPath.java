@@ -1,7 +1,7 @@
-package com.ajousw.spring.domain.navigation.route;
+package com.ajousw.spring.domain.navigation.route.entity;
 
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
-import com.ajousw.spring.domain.vehicle.Vehicle;
+import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
