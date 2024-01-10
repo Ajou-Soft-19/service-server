@@ -1,8 +1,9 @@
-package com.ajousw.spring.domain.navigation.api;
+package com.ajousw.spring.domain.navigation.api.provider;
 
-import com.ajousw.spring.domain.navigation.api.factory.Provider;
-import com.ajousw.spring.domain.navigation.api.info.NaverNavigationPathInfo;
-import com.ajousw.spring.domain.navigation.api.info.NavigationPathInfo;
+import com.ajousw.spring.domain.navigation.api.NavigationPathProvider;
+import com.ajousw.spring.domain.navigation.api.Provider;
+import com.ajousw.spring.domain.navigation.api.info.NaverNavigationApiResponse;
+import com.ajousw.spring.domain.navigation.api.info.NavigationApiResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
@@ -15,7 +16,7 @@ import org.springframework.test.context.ActiveProfiles;
 @Slf4j
 @SpringBootTest
 @ActiveProfiles("test")
-class NavigationPathProviderTest {
+class NaverNavigationTest {
 
     String dummy = "{\n"
             + "  \"code\": 0,\n"
@@ -353,7 +354,7 @@ class NavigationPathProviderTest {
 
         try {
             Map<String, Object> attributes = mapper.readValue(dummy, Map.class);
-            NaverNavigationPathInfo naverNavigationPathInfo = new NaverNavigationPathInfo(attributes);
+            NaverNavigationApiResponse naverNavigationPathInfo = new NaverNavigationApiResponse(attributes);
             log.info("{}", naverNavigationPathInfo.toString());
         } catch (JsonProcessingException | NullPointerException e) {
             log.error("으앙 주금 ㅋ", e);
@@ -367,7 +368,7 @@ class NavigationPathProviderTest {
     void api_test() {
         Map<String, String> params = Map.of("start", "127.105336,37.352248", "goal",
                 "127.11432998507473,37.378793096353206", "option", "trafast");
-        NavigationPathInfo navigationQueryResult = navigationPathProvider.getNavigationQueryResult(Provider.NAVER,
+        NavigationApiResponse navigationQueryResult = navigationPathProvider.getNavigationQueryResult(Provider.NAVER,
                 params);
 
         log.info("{}", navigationQueryResult);

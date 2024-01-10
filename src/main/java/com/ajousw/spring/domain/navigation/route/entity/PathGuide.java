@@ -29,14 +29,18 @@ public class PathGuide {
 
     private Long type;
 
+    private String instructions;
+
     private Long distance;
 
     private Long duration;
 
-    public PathGuide(NavigationPath navigationPath, Long pointIndex, Long type, Long distance, Long duration) {
+    public PathGuide(NavigationPath navigationPath, Long pointIndex, Long type, String instructions, Long distance,
+                     Long duration) {
         this.navigationPath = navigationPath;
         this.pointIndex = pointIndex;
         this.type = type;
+        this.instructions = instructions;
         this.distance = distance;
         this.duration = duration;
     }

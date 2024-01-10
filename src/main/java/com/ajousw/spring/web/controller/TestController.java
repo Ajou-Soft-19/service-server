@@ -3,7 +3,7 @@ package com.ajousw.spring.web.controller;
 import com.ajousw.spring.domain.auth.LoginService;
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.UserPrinciple;
-import com.ajousw.spring.web.controller.dto.MemberDto;
+import com.ajousw.spring.web.controller.dto.member.MemberDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

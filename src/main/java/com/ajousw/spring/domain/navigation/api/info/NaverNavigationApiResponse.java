@@ -8,10 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Getter
-public class NaverNavigationPathInfo extends NavigationPathInfo {
+public class NaverNavigationApiResponse extends NavigationApiResponse {
 
     @SuppressWarnings("unchecked")
-    public NaverNavigationPathInfo(Map<String, Object> attributes) {
+    public NaverNavigationApiResponse(Map<String, Object> attributes) {
         super(attributes);
 
         this.code = (int) attributes.get("code");
@@ -19,22 +19,25 @@ public class NaverNavigationPathInfo extends NavigationPathInfo {
         this.currentDateTime = (String) attributes.get("currentDateTime");
 
         Map<String, Object> route = (Map<String, Object>) attributes.get("route");
+        Map.Entry<String, Object> firstEntry = route.entrySet().iterator().next();
+        List<Map<String, Object>> results = (List<Map<String, Object>>) firstEntry.getValue();
 
-        List<Map<String, Object>> trafast = (List<Map<String, Object>>) route.get("trafast");
-
-        for (Map<String, Object> queryResult : trafast) {
+        for (Map<String, Object> queryResult : results) {
             Map<String, Object> summary = (Map<String, Object>) queryResult.get("summary");
 
             this.start = (List<Double>) ((Map<String, Object>) summary.get("start")).get("location");
             this.goal = (List<Double>) ((Map<String, Object>) summary.get("goal")).get("location");
-            this.distance = (int) summary.get("distance");
-            this.duration = (int) summary.get("duration");
-            this.path = (List<Coordinate>) queryResult.get("path");
+            this.distance = ((Integer) summary.get("distance")).longValue();
+            this.duration = ((Integer) summary.get("duration")).longValue();
+            List<List<Double>> rawCoordinates = (List<List<Double>>) queryResult.get("path");
+            this.paths = rawCoordinates.stream()
+                    .map(Coordinate::new)
+                    .toList();
 
-            this.guide = new ArrayList<>();
+            this.guides = new ArrayList<>();
             List<Map<String, Object>> guideList = (List<Map<String, Object>>) queryResult.get("guide");
             for (Map<String, Object> guideItem : guideList) {
-                this.guide.add(new Guide(guideItem));
+                this.guides.add(new Guide(guideItem));
             }
         }
     }
