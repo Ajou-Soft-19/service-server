@@ -1,12 +1,14 @@
 package com.ajousw.spring.domain.navigation.route.entity;
 
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
+import com.ajousw.spring.domain.navigation.api.Provider;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -33,6 +35,9 @@ public class NavigationPath extends BaseTimeEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
+
+    @Enumerated
+    private Provider provider;
 
     @Embedded
     @AttributeOverrides({
@@ -63,8 +68,9 @@ public class NavigationPath extends BaseTimeEntity {
     private final List<PathGuide> guides = new ArrayList<>();
 
     @Builder
-    public NavigationPath(Vehicle vehicle, MapLocation sourceLocation, MapLocation destLocation, String queryType,
-                          Long distance, Long duration, Long currentPathPoint) {
+    public NavigationPath(Vehicle vehicle, Provider provider, MapLocation sourceLocation, MapLocation destLocation,
+                          String queryType, Long distance, Long duration, Long currentPathPoint) {
+        this.provider = provider;
         this.vehicle = vehicle;
         this.sourceLocation = sourceLocation;
         this.destLocation = destLocation;

@@ -1,7 +1,8 @@
-package com.ajousw.spring.domain.navigation.api.factory;
+package com.ajousw.spring.domain.navigation.api.provider;
 
 import com.ajousw.spring.domain.exception.BadApiResponseException;
 import jakarta.annotation.PostConstruct;
+import java.util.Map;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,16 +15,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @Slf4j
 @Getter
 @Component
-public class NaverApiFactory {
-
-    @Value("${navigation.api.naver.url}")
+public class OsrmNavigationApi implements NavigationApi {
+    @Value("${navigation.api.osrm.url}")
     private String requestUrl;
-
-    @Value("${navigation.api.naver.client-id}")
-    private String clientId;
-
-    @Value("${navigation.api.naver.api-key}")
-    private String apiKey;
 
     private WebClient webClient;
 
@@ -32,13 +26,12 @@ public class NaverApiFactory {
         webClient = WebClient.builder().build();
     }
 
-    public ResponseEntity<String> getNavigationPathInfo(String start, String goal, String option) {
+    public ResponseEntity<String> getNavigationPathInfo(Map<String, String> params) {
         ResponseEntity<String> response = null;
         try {
             response = webClient.get()
-                    .uri(setParams(requestUrl, start, goal, option))
-                    .header("X-NCP-APIGW-API-KEY-ID", clientId)
-                    .header("X-NCP-APIGW-API-KEY", apiKey)
+                    .uri(setParams(requestUrl, params.get("start"), params.get("goal"),
+                            "getSteps".equals(params.get("getSteps"))))
                     .retrieve()
                     .toEntity(String.class)
                     .block();
@@ -46,14 +39,14 @@ public class NaverApiFactory {
             HttpStatusCode statusCode = e.getStatusCode();
 
             if (statusCode.isError()) {
-                log.error("Naver Direction 5 api {} error", e.getStatusCode(), e);
+                log.error("OSRM route api {} error", e.getStatusCode(), e);
                 throw new BadApiResponseException("API 서버에 오류가 발생했습니다.");
             }
         }
         return response;
     }
 
-    private String setParams(String requestUrl, String start, String goal, String option) {
-        return String.format(requestUrl, start, goal, option);
+    private String setParams(String requestUrl, String start, String goal, boolean getSteps) {
+        return String.format(requestUrl, start, goal, getSteps);
     }
 }
