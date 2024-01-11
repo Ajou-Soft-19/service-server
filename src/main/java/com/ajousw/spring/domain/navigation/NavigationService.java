@@ -1,5 +1,7 @@
 package com.ajousw.spring.domain.navigation;
 
+import com.ajousw.spring.domain.member.Member;
+import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
 import com.ajousw.spring.domain.navigation.api.NavigationPathProvider;
 import com.ajousw.spring.domain.navigation.api.Provider;
 import com.ajousw.spring.domain.navigation.api.info.Coordinate;
@@ -32,13 +34,17 @@ public class NavigationService {
     private final NavigationPathRepository navigationPathRepository;
     private final PathPointRepository pathPointRepository;
     private final PathGuideRepository pathGuideRepository;
+    private final MemberJpaRepository memberRepository;
 
     // TODO: ApiParams 클래스 추가, 코드 정리
-    public NavigationPathDto getNavigationPath(Provider provider, Map<String, String> params, String queryType,
-                                               boolean saveResult) {
+    public NavigationPathDto createNavigationPath(String email, Provider provider, Map<String, String> params,
+                                                  String queryType, boolean saveResult) {
+        Member member = findMemberByEmail(email);
+
         NavigationApiResponse navigationQueryResult = pathProvider.getNavigationQueryResult(provider, params);
 
-        NavigationPath naviPath = createNaviPath(navigationQueryResult, provider, queryType);
+        NavigationPath naviPath = createNaviPath(member, navigationQueryResult, provider, queryType,
+                navigationQueryResult.getPaths().size());
         if (saveResult) {
             navigationPathRepository.save(naviPath);
         }
@@ -53,15 +59,57 @@ public class NavigationService {
         return createNavigationPathDto(naviPath, pathPoints, pathGuides);
     }
 
-    private NavigationPathDto createNavigationPathDto(NavigationPath navigationPath, List<PathPoint> pathPoints,
-                                                      List<PathGuide> pathGuides) {
-        List<PathPointDto> pathPointDtos = pathPoints.stream().map(PathPointDto::new).toList();
-        List<PathGuideDto> pathGuideDtos = pathGuides.stream().map(PathGuideDto::new).toList();
-        return new NavigationPathDto(navigationPath, pathPointDtos, pathGuideDtos);
+    @Transactional(readOnly = true)
+    public NavigationPathDto getNavigationPathById(String email, Long naviPathId) {
+        Member member = findMemberByEmail(email);
+        NavigationPath navigationPath = findNavigationPathById(naviPathId);
+        checkPathOwner(member, navigationPath);
+
+        return createNavigationPathDto(navigationPath, navigationPath.getPathPoints(), navigationPath.getGuides());
     }
 
-    private NavigationPath createNaviPath(NavigationApiResponse navResponse, Provider provider, String queryType) {
+    public void updateCurrentPathPoint(String email, Long naviPathId, Long curPathIdx) {
+        Member member = findMemberByEmail(email);
+        NavigationPath navigationPath = findNavigationPathById(naviPathId);
+        checkPathOwner(member, navigationPath);
+
+        navigationPath.updateCurrentPathPoint(curPathIdx);
+    }
+
+    public void removeNavigationPath(String email, Long naviPathId) {
+        Member member = findMemberByEmail(email);
+        NavigationPath navigationPath = findNavigationPathById(naviPathId);
+        checkPathOwner(member, navigationPath);
+
+        pathGuideRepository.deleteAllInBatch(navigationPath.getGuides());
+        pathPointRepository.deleteAllInBatch(navigationPath.getPathPoints());
+        navigationPathRepository.deleteById(navigationPath.getNaviPathId());
+    }
+
+    private static void checkPathOwner(Member member, NavigationPath navigationPath) {
+        if(!navigationPath.getMember().getId().equals(member.getId())) {
+            throw new IllegalArgumentException("Not User of Navigation Path");
+        }
+    }
+
+    private NavigationPath findNavigationPathById(Long naviPathId) {
+        return navigationPathRepository.findById(naviPathId).orElseThrow(() -> {
+            log.info("존재하지 않는 네비게이션 경로");
+            return new IllegalArgumentException("No Such Navigation Path");
+        });
+    }
+
+    private Member findMemberByEmail(String email) {
+        return memberRepository.findByEmail(email).orElseThrow(() -> {
+            log.error("계정이 존재하지 않음");
+            return new IllegalArgumentException("No Such Member");
+        });
+    }
+
+    private NavigationPath createNaviPath(Member member, NavigationApiResponse navResponse, Provider provider, String queryType, int pathSize) {
         return NavigationPath.builder()
+                .member(member)
+                .vehicle(null) // TODO: vehicle 조회
                 .provider(provider)
                 .sourceLocation(new MapLocation(navResponse.getStart().get(0), navResponse.getStart().get(1)))
                 .destLocation(new MapLocation(navResponse.getGoal().get(0), navResponse.getGoal().get(1)))
@@ -69,6 +117,7 @@ public class NavigationService {
                 .distance(navResponse.getDistance())
                 .duration(navResponse.getDuration())
                 .currentPathPoint(0L)
+                .pathPointSize((long) pathSize)
                 .build();
     }
 
@@ -93,5 +142,12 @@ public class NavigationService {
         }
 
         return pathPoints;
+    }
+
+    private NavigationPathDto createNavigationPathDto(NavigationPath navigationPath, List<PathPoint> pathPoints,
+                                                      List<PathGuide> pathGuides) {
+        List<PathPointDto> pathPointDtos = pathPoints.stream().map(PathPointDto::new).toList();
+        List<PathGuideDto> pathGuideDtos = pathGuides.stream().map(PathGuideDto::new).toList();
+        return new NavigationPathDto(navigationPath, pathPointDtos, pathGuideDtos);
     }
 }

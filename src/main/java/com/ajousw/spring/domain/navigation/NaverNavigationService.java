@@ -20,8 +20,7 @@ public class NaverNavigationService {
     public NavigationPathDto getNaverNavigationPath(String email, String source, String dest, String option,
                                                     boolean saveResult) {
         Map<String, String> params = createParams(source, dest, Map.of("option", option));
-
-        return navigationService.getNavigationPath(Provider.NAVER, params, "Driving 5", saveResult);
+        return navigationService.createNavigationPath(email, Provider.NAVER, params, "Driving 5", saveResult);
     }
 
     private Map<String, String> createParams(String source, String dest, Map<String, String> options) {

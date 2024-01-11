@@ -20,7 +20,7 @@ public class OsrmNavigationService {
     public NavigationPathDto getOsrmNavigationPath(String email, String source, String dest, String getSteps,
                                                    boolean saveResult) {
         Map<String, String> params = createParams(source, dest, Map.of("getSteps", getSteps));
-        return navigationService.getNavigationPath(Provider.OSRM, params, "OSRM", saveResult);
+        return navigationService.createNavigationPath(email, Provider.OSRM, params, "OSRM", saveResult);
     }
 
     private Map<String, String> createParams(String source, String dest, Map<String, String> options) {
