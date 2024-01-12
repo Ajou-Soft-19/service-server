@@ -17,8 +17,15 @@ public class MemberService {
 
     public Member findByEmail(String email) {
         return memberJpaRepository.findByEmail(email).orElseThrow(() -> {
-            log.error("해당 이메일로 가입된 계정이 존재하지 않음.");
+            log.info("해당 이메일로 가입된 계정이 존재하지 않음.");
             return new IllegalArgumentException("해당 이메일로 가입된 계정이 존재하지 않습니다.");
+        });
+    }
+
+    public Member findByMemberId(Long memberId) {
+        return memberJpaRepository.findById(memberId).orElseThrow(() -> {
+            log.info("해당 아이디의 멤버가 존재하지 않음");
+            return new IllegalArgumentException("해당 아이디의 멤버가 존재하지 않습니다.");
         });
     }
 }

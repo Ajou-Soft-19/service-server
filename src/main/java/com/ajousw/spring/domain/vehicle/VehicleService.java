@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,8 +23,8 @@ public class VehicleService {
 
     /* 자동차 정보 수정 */
     @Transactional
-    public void updateVehicle(Long id, VehicleCreateDto vehicleCreateDto) {
-        Vehicle vehicle = findVehicleByVehicleId(id);
+    public void updateVehicle(String email, Long vehicleId, VehicleCreateDto vehicleCreateDto) {
+        Vehicle vehicle = findVehicleByVehicleId(email, vehicleId);
         if (vehicleCreateDto.getVehicleType() != null) {
             vehicle.changeVehicleType(vehicleCreateDto.getVehicleType());
         }
@@ -37,24 +38,20 @@ public class VehicleService {
         }
     }
 
-    /* 자동차 전체 삭제 */
-    public void removeVehicle(Long vehicleId) {
-        try {
-            Vehicle vehicle = findVehicleByVehicleId(vehicleId);
-            vehicleRepository.delete(vehicle);
-        } catch(IllegalArgumentException e) {
-            throw e;
-        }
+    /* 특정 자동차 삭제 */
+    public void removeVehicle(String email, Long vehicleId) {
+        Vehicle vehicle = findVehicleByVehicleId(email, vehicleId);
+        vehicleRepository.delete(vehicle);
     }
 
-    /* 특정 자동차 삭제*/
-    public void removeVehicleAll() {
-        vehicleRepository.deleteAll();
-    }
+    /* 자동차 전체 삭제*/
+//    public void removeVehicleAll() {
+//        vehicleRepository.deleteAll();
+//    }
 
     /* 자동차 등록 */
     public void createVehicle(VehicleCreateDto vehicleCreateDto, String email) {
-        Member member = getMemberId(email);
+        Member member = getMemberByEmail(email);
         validationLicence(vehicleCreateDto.getLicenceNumber());
         Vehicle vehicle = Vehicle.builder()
                 .vehicleType(vehicleCreateDto.getVehicleType())
@@ -74,20 +71,43 @@ public class VehicleService {
     }
 
     /* 특정 자동차 조회 */
-    public Vehicle findVehicleByVehicleId(Long vehicleId) {
+    public Vehicle findVehicleByVehicleId(String email, Long vehicleId) {
+        Member member = getMemberByEmail(email);
+        this.checkRole(member.getId(), vehicleId);
         return vehicleRepository.findByVehicleId(vehicleId).orElseThrow(() -> {
             log.error("해당 id의 차량의 존재하지 않음.");
             return new IllegalArgumentException("해당 id의 차량이 존재하지 않습니다.");
         });
     }
 
-    /* 사용자의 등록된 모든 자동차 조회 */
-    public List<Vehicle> findVehicleAll(String email) {
-        Member member = getMemberId(email);
+    /* 사용자의 등록된 모든 자동차 조회 이메일로 */
+    public List<Vehicle> findVehicleAllByEmail(String email) {
+        Member member = getMemberByEmail(email);
         return vehicleRepository.findAllByMemberId(member.getId());
     }
 
-    private Member getMemberId(String email) {
+    /* 사용자의 등록된 모든 자동차 조회 아이디로 */
+    public List<Vehicle> findVehicleAllByEmail(Long memberId) {
+        Member member = getMemberById(memberId);
+        return vehicleRepository.findAllByMemberId(member.getId());
+    }
+
+
+    // 권한 있는지 체크하는 메소드
+    public void checkRole(Long memberId, Long vehicleId) {
+        long cnt = this.findVehicleAllByEmail(memberId)
+                .stream().filter(v -> v.getVehicleId().equals(vehicleId)).count();
+
+        if (cnt == 0) {
+            throw new IllegalArgumentException("사용자에게 권한이 없는 차량입니다.");
+        }
+    }
+
+    private Member getMemberById(Long memberId) {
+        return memberService.findByMemberId(memberId);
+    }
+
+    private Member getMemberByEmail(String email) {
         return memberService.findByEmail(email);
     }
 }
