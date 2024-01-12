@@ -60,4 +60,14 @@ public class Member extends BaseTimeEntity {
 
         return parsedRoles.contains(role.getRoleName());
     }
+
+    public void addRole(Role role) {
+        this.roles = this.roles + "," + role.getRoleName();
+    }
+
+    public void removeRole(Role role) {
+        ArrayList<String> parsedRoles = new ArrayList<>(Arrays.asList(this.roles.split(",")));
+        parsedRoles.remove(role.getRoleName());
+        this.roles = String.join(",", parsedRoles);
+    }
 }
