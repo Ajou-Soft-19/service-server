@@ -50,7 +50,9 @@ public class VehicleController {
     }
 
     @PutMapping("/{id}")
-    public ApiResponseJson updateVehicle(@PathVariable Long id) {
+    public ApiResponseJson updateVehicle(@PathVariable Long id,
+                                         @Valid @RequestBody VehicleCreateDto vehicleCreateDto) {
+        vehicleService.updateVehicle(id, vehicleCreateDto);
         return new ApiResponseJson(HttpStatus.OK, "success");
     }
 

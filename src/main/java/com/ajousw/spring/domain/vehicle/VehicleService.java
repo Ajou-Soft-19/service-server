@@ -20,6 +20,23 @@ public class VehicleService {
     public final VehicleRepository vehicleRepository;
     private final MemberService memberService;
 
+    /* 자동차 정보 수정 */
+    @Transactional
+    public void updateVehicle(Long id, VehicleCreateDto vehicleCreateDto) {
+        Vehicle vehicle = findVehicleByVehicleId(id);
+        if (vehicleCreateDto.getVehicleType() != null) {
+            vehicle.changeVehicleType(vehicleCreateDto.getVehicleType());
+        }
+
+        if (vehicleCreateDto.getLicenceNumber() != null) {
+            vehicle.changeLicenceNumber(vehicleCreateDto.getLicenceNumber());
+        }
+
+        if (vehicleCreateDto.getCountryCode() != null) {
+            vehicle.changeCountryCode(vehicleCreateDto.getCountryCode());
+        }
+    }
+
     /* 자동차 전체 삭제 */
     public void removeVehicle(Long vehicleId) {
         try {
@@ -36,7 +53,7 @@ public class VehicleService {
     }
 
     /* 자동차 등록 */
-    public Vehicle createVehicle(VehicleCreateDto vehicleCreateDto, String email) {
+    public void createVehicle(VehicleCreateDto vehicleCreateDto, String email) {
         Member member = getMemberId(email);
         validationLicence(vehicleCreateDto.getLicenceNumber());
         Vehicle vehicle = Vehicle.builder()
@@ -48,7 +65,6 @@ public class VehicleService {
                 .build();
 
         vehicleRepository.save(vehicle);
-        return vehicle;
     }
 
     private void validationLicence(String licence) {
