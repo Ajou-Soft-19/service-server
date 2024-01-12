@@ -15,7 +15,10 @@ import java.util.Optional;
 public class MemberService {
     public final MemberJpaRepository memberJpaRepository;
 
-    public Optional<Member> findOne(String email) {
-        return memberJpaRepository.findByEmail(email);
+    public Member findByEmail(String email) {
+        return memberJpaRepository.findByEmail(email).orElseThrow(() -> {
+            log.error("해당 이메일로 가입된 계정이 존재하지 않음.");
+            return new IllegalArgumentException("해당 이메일로 가입된 계정이 존재하지 않습니다.");
+        });
     }
 }
