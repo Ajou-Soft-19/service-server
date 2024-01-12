@@ -26,15 +26,32 @@ import java.util.stream.Collectors;
 public class VehicleController {
     private final VehicleService vehicleService;
 
-    @PostMapping("")
-    public Long setVehicle(@AuthenticationPrincipal UserPrinciple user,
-                              @Valid @RequestBody VehicleCreateDto vehicleCreateDto) {
-        return vehicleService.createVehicle(vehicleCreateDto, user.getEmail()).getVehicleId();
+    @DeleteMapping("")
+    public ApiResponseJson deleteVehicleAll() {
+        vehicleService.removeVehicleAll();
+        return new ApiResponseJson(HttpStatus.OK, "Delete Success");
     }
 
-    @PutMapping("")
-    public String updateVehicle(@AuthenticationPrincipal UserPrinciple user) {
-        return "update Vehicle";
+    @DeleteMapping("/{vehicleId}")
+    public ApiResponseJson deleteVehicle(@PathVariable Long vehicleId) {
+        try {
+            vehicleService.removeVehicle(vehicleId);
+            return new ApiResponseJson(HttpStatus.OK, "success");
+        } catch(IllegalArgumentException e) {
+            return new ApiResponseJson(HttpStatus.BAD_REQUEST, 400,  e.getMessage());
+        }
+    }
+
+    @PostMapping("")
+    public ApiResponseJson setVehicle(@AuthenticationPrincipal UserPrinciple user,
+                              @Valid @RequestBody VehicleCreateDto vehicleCreateDto) {
+        vehicleService.createVehicle(vehicleCreateDto, user.getEmail());
+        return new ApiResponseJson(HttpStatus.OK, "success");
+    }
+
+    @PutMapping("/{id}")
+    public ApiResponseJson updateVehicle(@PathVariable Long id) {
+        return new ApiResponseJson(HttpStatus.OK, "success");
     }
 
     @GetMapping("/{id}")

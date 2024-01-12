@@ -20,6 +20,21 @@ public class VehicleService {
     public final VehicleRepository vehicleRepository;
     private final MemberService memberService;
 
+    /* 자동차 전체 삭제 */
+    public void removeVehicle(Long vehicleId) {
+        try {
+            Vehicle vehicle = findVehicleByVehicleId(vehicleId);
+            vehicleRepository.delete(vehicle);
+        } catch(IllegalArgumentException e) {
+            throw e;
+        }
+    }
+
+    /* 특정 자동차 삭제*/
+    public void removeVehicleAll() {
+        vehicleRepository.deleteAll();
+    }
+
     /* 자동차 등록 */
     public Vehicle createVehicle(VehicleCreateDto vehicleCreateDto, String email) {
         Member member = getMemberId(email);
