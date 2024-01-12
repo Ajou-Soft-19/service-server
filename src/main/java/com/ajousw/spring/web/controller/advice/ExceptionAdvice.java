@@ -1,5 +1,6 @@
 package com.ajousw.spring.web.controller.advice;
 
+import com.ajousw.spring.domain.exception.ApiNotSupportedException;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import com.ajousw.spring.web.controller.json.ResponseStatusCode;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class ExceptionAdvice {
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class, ApiNotSupportedException.class})
     public ApiResponseJson handleBadRequestException(Exception e) {
         return new ApiResponseJson(HttpStatus.BAD_REQUEST, ResponseStatusCode.WRONG_PARAMETER,
                 Map.of(ERROR_MSG_KEY, e.getMessage()));

@@ -19,6 +19,7 @@ public class NavigationPathDto {
     private String queryType;
     private Long distance;
     private Long duration;
+    private Long pathPointSize;
     private Long currentPathPoint;
     private List<PathPointDto> pathPoint;
     private List<PathGuideDto> pathGuide;
@@ -34,6 +35,7 @@ public class NavigationPathDto {
         this.distance = navigationPath.getDistance();
         this.duration = navigationPath.getDuration();
         this.currentPathPoint = navigationPath.getCurrentPathPoint();
+        this.pathPointSize = ((Integer) pathPoints.size()).longValue();
         this.pathGuide = pathGuides;
         this.pathPoint = pathPoints;
     }

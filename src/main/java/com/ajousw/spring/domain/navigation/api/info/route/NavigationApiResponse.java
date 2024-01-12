@@ -1,11 +1,11 @@
-package com.ajousw.spring.domain.navigation.api.info;
+package com.ajousw.spring.domain.navigation.api.info.route;
 
 import java.util.List;
 import java.util.Map;
 import lombok.Data;
 
 /**
- * 경로가 한 개만 반환됨 -> 나중에 다중 경로로 리펙토링
+ * TODO: 경로가 한 개만 반환됨 -> 나중에 다중 경로로 리펙토링
  */
 @Data
 public class NavigationApiResponse {
@@ -25,10 +25,6 @@ public class NavigationApiResponse {
 
     public NavigationApiResponse(Map<String, Object> attributes) {
         this.attributes = attributes;
-    }
-
-    public List<Coordinate> getPaths() {
-        return paths;
     }
 
     @Override

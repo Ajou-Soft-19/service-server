@@ -4,9 +4,9 @@ import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
 import com.ajousw.spring.domain.navigation.api.NavigationPathProvider;
 import com.ajousw.spring.domain.navigation.api.Provider;
-import com.ajousw.spring.domain.navigation.api.info.Coordinate;
-import com.ajousw.spring.domain.navigation.api.info.Guide;
-import com.ajousw.spring.domain.navigation.api.info.NavigationApiResponse;
+import com.ajousw.spring.domain.navigation.api.info.route.Coordinate;
+import com.ajousw.spring.domain.navigation.api.info.route.Guide;
+import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.dto.PathGuideDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
@@ -16,12 +16,15 @@ import com.ajousw.spring.domain.navigation.route.entity.NavigationPathRepository
 import com.ajousw.spring.domain.navigation.route.entity.PathGuide;
 import com.ajousw.spring.domain.navigation.route.entity.PathGuideRepository;
 import com.ajousw.spring.domain.navigation.route.entity.PathPoint;
+import com.ajousw.spring.domain.navigation.route.entity.PathPointJdbcRepository;
 import com.ajousw.spring.domain.navigation.route.entity.PathPointRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,8 +36,10 @@ public class NavigationService {
     private final NavigationPathProvider pathProvider;
     private final NavigationPathRepository navigationPathRepository;
     private final PathPointRepository pathPointRepository;
+    private final PathPointJdbcRepository pathPointJdbcRepository;
     private final PathGuideRepository pathGuideRepository;
     private final MemberJpaRepository memberRepository;
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // TODO: ApiParams 클래스 추가, 코드 정리
     public NavigationPathDto createNavigationPath(String email, Provider provider, Map<String, String> params,
@@ -53,7 +58,8 @@ public class NavigationService {
         List<PathPoint> pathPoints = createPathPoint(naviPath, navigationQueryResult.getPaths());
         if (saveResult) {
             pathGuideRepository.saveAll(pathGuides);
-            pathPointRepository.saveAll(pathPoints);
+//            pathPointRepository.saveAll(pathPoints); 일단 jdbc로 batch insert
+            pathPointJdbcRepository.saveAllInBatch(pathPoints);
         }
 
         return createNavigationPathDto(naviPath, pathPoints, pathGuides);
@@ -62,7 +68,7 @@ public class NavigationService {
     @Transactional(readOnly = true)
     public NavigationPathDto getNavigationPathById(String email, Long naviPathId) {
         Member member = findMemberByEmail(email);
-        NavigationPath navigationPath = findNavigationPathById(naviPathId);
+        NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
         checkPathOwner(member, navigationPath);
 
         return createNavigationPathDto(navigationPath, navigationPath.getPathPoints(), navigationPath.getGuides());
@@ -86,8 +92,8 @@ public class NavigationService {
         navigationPathRepository.deleteById(navigationPath.getNaviPathId());
     }
 
-    private static void checkPathOwner(Member member, NavigationPath navigationPath) {
-        if(!navigationPath.getMember().getId().equals(member.getId())) {
+    private void checkPathOwner(Member member, NavigationPath navigationPath) {
+        if (!navigationPath.getMember().getId().equals(member.getId())) {
             throw new IllegalArgumentException("Not User of Navigation Path");
         }
     }
@@ -99,6 +105,16 @@ public class NavigationService {
         });
     }
 
+    // TODO: 쿼리 좀 더 최적화
+    // path point에 fetch join 사용 시 오히려 성능 저하, 별건의 쿼리로 따로 불러오는 것이 좋을듯
+    private NavigationPath findNavigationPathByIdFetchJoin(Long naviPathId) {
+        return navigationPathRepository.findNavigationPathByNaviPathIdFetchGuides(naviPathId)
+                .orElseThrow(() -> {
+                    log.info("존재하지 않는 네비게이션 경로");
+                    return new IllegalArgumentException("No Such Navigation Path");
+                });
+    }
+
     private Member findMemberByEmail(String email) {
         return memberRepository.findByEmail(email).orElseThrow(() -> {
             log.error("계정이 존재하지 않음");
@@ -106,7 +122,8 @@ public class NavigationService {
         });
     }
 
-    private NavigationPath createNaviPath(Member member, NavigationApiResponse navResponse, Provider provider, String queryType, int pathSize) {
+    private NavigationPath createNaviPath(Member member, NavigationApiResponse navResponse, Provider provider,
+                                          String queryType, int pathSize) {
         return NavigationPath.builder()
                 .member(member)
                 .vehicle(null) // TODO: vehicle 조회
@@ -137,7 +154,8 @@ public class NavigationService {
         List<PathPoint> pathPoints = new ArrayList<>();
         for (Coordinate path : paths) {
             pathPoints.add(new PathPoint(naviPath, index,
-                    path.getLatitude(), path.getLongitude()));
+                    geometryFactory.createPoint(
+                            new org.locationtech.jts.geom.Coordinate(path.getLongitude(), path.getLatitude()))));
             index++;
         }
 

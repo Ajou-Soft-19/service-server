@@ -29,28 +29,22 @@ public class NavigationController {
     private final OsrmNavigationService osrmNavigationService;
     private final NaverNavigationService naverNavigationService;
 
-    @PostMapping("/api/navi/osrm/route")
-    public ApiResponseJson getOsrmRoute(@RequestBody NavigationQueryDto navigationQueryDto,
+    @PostMapping("/api/navi/route")
+    public ApiResponseJson getOsrmRoute(@Valid @RequestBody NavigationQueryDto navigationQueryDto,
                                         BindingResult bindingResult,
                                         @AuthenticationPrincipal UserPrinciple userPrinciple) {
         checkBindingResult(bindingResult);
 
-        NavigationPathDto navigationPath = osrmNavigationService.getOsrmNavigationPath(userPrinciple.getEmail(),
-                navigationQueryDto.getSource(), navigationQueryDto.getDest(),
-                navigationQueryDto.getOption(), false);
-
-        return new ApiResponseJson(HttpStatus.OK, navigationPath);
-    }
-
-    @PostMapping("/api/navi/naver/route")
-    public ApiResponseJson getNaverDriving5(@RequestBody NavigationQueryDto navigationQueryDto,
-                                            BindingResult bindingResult,
-                                            @AuthenticationPrincipal UserPrinciple userPrinciple) {
-        checkBindingResult(bindingResult);
-
-        NavigationPathDto navigationPath = naverNavigationService.getNaverNavigationPath(userPrinciple.getEmail(),
-                navigationQueryDto.getSource(), navigationQueryDto.getDest(),
-                navigationQueryDto.getOption(), false);
+        NavigationPathDto navigationPath;
+        switch (navigationQueryDto.getProvider()) {
+            case NAVER -> navigationPath = naverNavigationService.getNaverNavigationPath(userPrinciple.getEmail(),
+                    navigationQueryDto.getSource(), navigationQueryDto.getDest(),
+                    navigationQueryDto.getOption(), true);
+            case OSRM -> navigationPath = osrmNavigationService.getOsrmNavigationPath(userPrinciple.getEmail(),
+                    navigationQueryDto.getSource(), navigationQueryDto.getDest(),
+                    navigationQueryDto.getOption(), true);
+            default -> throw new IllegalArgumentException("아직 지원하지 않는 API 입니다.");
+        }
 
         return new ApiResponseJson(HttpStatus.OK, navigationPath);
     }

@@ -24,6 +24,7 @@ repositories {
 dependencies {
     // db
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.hibernate:hibernate-spatial:6.2.7.Final'
     implementation 'org.postgresql:postgresql:42.6.0'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -37,7 +38,6 @@ dependencies {
     // bean validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     // jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'

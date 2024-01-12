@@ -4,17 +4,31 @@ import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
 import com.ajousw.spring.domain.navigation.api.Provider;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
-import jakarta.persistence.*;
-
+import jakarta.persistence.AttributeOverride;
+import jakarta.persistence.AttributeOverrides;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 @Entity
 @Getter
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class NavigationPath extends BaseTimeEntity {
 
@@ -22,7 +36,7 @@ public class NavigationPath extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long naviPathId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
@@ -61,10 +75,11 @@ public class NavigationPath extends BaseTimeEntity {
     @OneToMany(mappedBy = "navigationPath", fetch = FetchType.LAZY)
     private final List<PathGuide> guides = new ArrayList<>();
 
-    private Long maxPathIndex;
+    private Long pathPointSize;
 
     @Builder
-    public NavigationPath(Member member, Vehicle vehicle, Provider provider, MapLocation sourceLocation, MapLocation destLocation,
+    public NavigationPath(Member member, Vehicle vehicle, Provider provider, MapLocation sourceLocation,
+                          MapLocation destLocation,
                           String queryType, Long distance, Long duration, Long currentPathPoint, Long pathPointSize) {
         this.member = member;
         this.provider = provider;
@@ -75,14 +90,14 @@ public class NavigationPath extends BaseTimeEntity {
         this.distance = distance;
         this.duration = duration;
         this.currentPathPoint = currentPathPoint;
-        this.maxPathIndex = pathPointSize;
+        this.pathPointSize = pathPointSize;
     }
 
     public void updateCurrentPathPoint(Long currentIdx) {
-        if(currentIdx < 0 || this.maxPathIndex >= currentIdx) {
-            throw new IllegalArgumentException("Wrong Index Range");
+        if (currentIdx < 0 || this.pathPointSize <= currentIdx) {
+            throw new IllegalArgumentException(String.format("Wrong Index Range Not in [0 ~ %d]", pathPointSize - 1));
         }
 
-        this.maxPathIndex = currentIdx;
+        this.currentPathPoint = currentIdx;
     }
 }

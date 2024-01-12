@@ -2,8 +2,8 @@ package com.ajousw.spring.domain.navigation.api.provider;
 
 import com.ajousw.spring.domain.navigation.api.NavigationPathProvider;
 import com.ajousw.spring.domain.navigation.api.Provider;
-import com.ajousw.spring.domain.navigation.api.info.NaverNavigationApiResponse;
-import com.ajousw.spring.domain.navigation.api.info.NavigationApiResponse;
+import com.ajousw.spring.domain.navigation.api.info.route.NaverNavigationApiResponse;
+import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;

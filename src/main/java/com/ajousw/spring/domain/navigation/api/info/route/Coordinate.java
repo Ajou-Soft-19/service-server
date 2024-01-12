@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.navigation.api.info;
+package com.ajousw.spring.domain.navigation.api.info.route;
 
 import java.util.List;
 import lombok.Data;
