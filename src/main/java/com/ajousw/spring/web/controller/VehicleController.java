@@ -4,13 +4,18 @@ import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.vehicle.VehicleService;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleCreateDto;
+import com.ajousw.spring.web.controller.dto.vehicle.VehicleDto;
+import com.ajousw.spring.web.controller.dto.vehicle.VehicleListDto;
+import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 // TODO: DTO 생각해서 추가 및 수정
 
@@ -32,16 +37,18 @@ public class VehicleController {
         return "update Vehicle";
     }
 
-    // TODO: 리턴해줄 DTO 정의해서 수정해야 함.
     @GetMapping("/{id}")
     @ResponseBody
-    public String getVehicle(@PathVariable("id") Long vehicleId) {vehicleService.findVehicleByVehicleId(vehicleId);
-        Vehicle tmp = vehicleService.findVehicleByVehicleId(vehicleId);
-        return "success";
+    public ApiResponseJson getVehicle(@PathVariable("id") Long vehicleId) {vehicleService.findVehicleByVehicleId(vehicleId);
+         VehicleDto result = new VehicleDto(vehicleService.findVehicleByVehicleId(vehicleId));
+        return new ApiResponseJson(HttpStatus.OK, result);
     }
 
     @GetMapping("/all")
-    public List<Vehicle> getVehicleAll(@AuthenticationPrincipal UserPrinciple user) {
-        return vehicleService.findVehicleAll(user.getEmail());
+    public ApiResponseJson getVehicleAll(@AuthenticationPrincipal UserPrinciple user) {
+        List<VehicleListDto> result = vehicleService.findVehicleAll(user.getEmail()).stream()
+                .map(v -> new VehicleListDto(v))
+                .collect(Collectors.toList());
+        return new ApiResponseJson(HttpStatus.OK, result);
     }
 }
