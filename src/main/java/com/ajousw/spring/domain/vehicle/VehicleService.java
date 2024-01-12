@@ -66,6 +66,7 @@ public class VehicleService {
 
     private void validationLicence(String licence) {
         if (vehicleRepository.existsByLicenceNumber(licence)) {
+            log.info("이미 등록된 차량을 등록하려 함.");
             throw new IllegalArgumentException("이미 등록된 차량입니다.");
         }
     }
@@ -75,7 +76,7 @@ public class VehicleService {
         Member member = getMemberByEmail(email);
         this.checkRole(member.getId(), vehicleId);
         return vehicleRepository.findByVehicleId(vehicleId).orElseThrow(() -> {
-            log.error("해당 id의 차량의 존재하지 않음.");
+            log.info("해당 id의 차량의 존재하지 않음.");
             return new IllegalArgumentException("해당 id의 차량이 존재하지 않습니다.");
         });
     }
@@ -99,6 +100,7 @@ public class VehicleService {
                 .stream().filter(v -> v.getVehicleId().equals(vehicleId)).count();
 
         if (cnt == 0) {
+            log.info("사용자에게 권한이 없는 차량");
             throw new IllegalArgumentException("사용자에게 권한이 없는 차량입니다.");
         }
     }
