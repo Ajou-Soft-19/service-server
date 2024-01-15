@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.navigation.route.entity;
+package com.ajousw.spring.domain.navigation.entity;
 
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

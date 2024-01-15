@@ -1,5 +1,6 @@
-package com.ajousw.spring.domain.navigation.route.entity;
+package com.ajousw.spring.domain.navigation.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -11,37 +12,37 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PathGuide {
+public class CheckPoint {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID pathGuideId;
+    private UUID checkPointId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "navigation_path_id")
     private NavigationPath navigationPath;
 
+    @Column(columnDefinition = "geometry(Point, 4326)")
+    private Point coordinate;
+
     private Long pointIndex;
 
-    private Long type;
+    private Double distance;
 
-    private String instructions;
+    private Double duration;
 
-    private Long distance;
-
-    private Long duration;
-
-    public PathGuide(NavigationPath navigationPath, Long pointIndex, Long type, String instructions, Long distance,
-                     Long duration) {
+    public CheckPoint(NavigationPath navigationPath, Point coordinate, Long pointIndex, Double distance,
+                      Double duration) {
         this.navigationPath = navigationPath;
+        this.coordinate = coordinate;
         this.pointIndex = pointIndex;
-        this.type = type;
-        this.instructions = instructions;
         this.distance = distance;
         this.duration = duration;
     }
+
 }

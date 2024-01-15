@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.navigation.route.entity;
+package com.ajousw.spring.domain.navigation.entity;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;

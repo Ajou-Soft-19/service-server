@@ -1,6 +1,6 @@
 package com.ajousw.spring.domain.navigation.dto;
 
-import com.ajousw.spring.domain.navigation.route.entity.CheckPoint;
+import com.ajousw.spring.domain.navigation.entity.CheckPoint;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.navigation.route.entity;
+package com.ajousw.spring.domain.navigation.entity;
 
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;

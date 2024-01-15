@@ -1,8 +1,8 @@
 package com.ajousw.spring.domain.navigation.dto;
 
 import com.ajousw.spring.domain.navigation.api.Provider;
-import com.ajousw.spring.domain.navigation.route.entity.MapLocation;
-import com.ajousw.spring.domain.navigation.route.entity.NavigationPath;
+import com.ajousw.spring.domain.navigation.entity.MapLocation;
+import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Data;
