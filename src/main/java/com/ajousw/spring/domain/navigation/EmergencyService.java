@@ -17,10 +17,13 @@ import com.ajousw.spring.domain.navigation.route.entity.NavigationPath;
 import com.ajousw.spring.domain.navigation.route.entity.NavigationPathRepository;
 import com.ajousw.spring.domain.navigation.route.entity.PathPoint;
 import com.ajousw.spring.domain.navigation.route.entity.PathPointRepository;
+import com.ajousw.spring.domain.navigation.warn.AlertService;
 import com.ajousw.spring.domain.util.CoordinateUtil;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -39,6 +42,7 @@ public class EmergencyService {
     private final BatchInsertJdbcRepository batchInsertJdbcRepository;
     private final CheckPointRepository checkPointRepository;
     private final MemberJpaRepository memberRepository;
+    private final AlertService targetFilter;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
     private final double wayPointDistance = 1000.0;
 
@@ -73,10 +77,35 @@ public class EmergencyService {
 
     public void updateCurrentPathPoint(String email, Long naviPathId, Long curPathIdx) {
         Member member = findMemberByEmail(email);
-        NavigationPath navigationPath = findNavigationPathById(naviPathId);
+        NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
         checkPathOwner(member, navigationPath);
 
+        Long oldPathIdx = navigationPath.getCurrentPathPoint();
+        List<CheckPoint> checkPoints = navigationPath.getCheckPoints();
         navigationPath.updateCurrentPathPoint(curPathIdx);
+
+        // TODO: 응급 차량 다음 checkpoint 주변 1km 차량 조회, 체크포인트 지났는지 판단
+        Optional<CheckPoint> previousCheckPointOptional = checkPoints.stream()
+                .filter(c -> c.getPointIndex() > oldPathIdx && c.getPointIndex() <= curPathIdx)
+                .max(Comparator.comparing(CheckPoint::getPointIndex));
+
+        if (previousCheckPointOptional.isEmpty()) {
+            return;
+        }
+
+        CheckPoint previousCheckPoint = previousCheckPointOptional.get();
+
+        Optional<CheckPoint> nextCheckPointOptional = checkPoints.stream()
+                .filter(c -> c.getPointIndex() > previousCheckPoint.getPointIndex())
+                .min(Comparator.comparing(CheckPoint::getPointIndex));
+
+        if (nextCheckPointOptional.isEmpty()) {
+            return;
+        }
+
+        CheckPoint nextCheckPoint = nextCheckPointOptional.get();
+
+        targetFilter.alertNextCheckPoint(navigationPath, navigationPath.getPathPoints(), nextCheckPoint);
     }
 
     public void removeNavigationPath(String email, Long naviPathId) {

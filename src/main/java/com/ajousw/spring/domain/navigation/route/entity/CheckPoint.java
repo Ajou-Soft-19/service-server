@@ -44,13 +44,5 @@ public class CheckPoint {
         this.distance = distance;
         this.duration = duration;
     }
-
-
-    public void setDistance(Double distance) {
-        this.distance = distance;
-    }
-
-    public void setDuration(Double duration) {
-        this.duration = duration;
-    }
+    
 }

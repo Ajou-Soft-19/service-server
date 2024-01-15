@@ -105,6 +105,11 @@ public class NavigationPath extends BaseTimeEntity {
             throw new IllegalArgumentException(String.format("Wrong Index Range Not in [0 ~ %d]", pathPointSize - 1));
         }
 
+        if (this.currentPathPoint >= currentIdx) {
+            throw new IllegalArgumentException(
+                    String.format("Index Moving Backward, Correct Range [%d ~ %d]", currentIdx + 1, pathPointSize - 1));
+        }
+
         this.currentPathPoint = currentIdx;
     }
 
