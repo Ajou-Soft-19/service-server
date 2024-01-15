@@ -28,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +45,9 @@ public class EmergencyService {
     private final MemberJpaRepository memberRepository;
     private final AlertService targetFilter;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
-    private final double wayPointDistance = 1000.0;
+
+    @Value("${emergency.check-point-distance}")
+    private double checkPointDistance;
 
 
     public NavigationPathDto createNavigationPath(String email, Provider provider, Map<String, String> params,
@@ -75,7 +78,7 @@ public class EmergencyService {
                 navigationPath.getCheckPoints());
     }
 
-    public void updateCurrentPathPoint(String email, Long naviPathId, Long curPathIdx) {
+    public CheckPointDto updateCurrentPathPoint(String email, Long naviPathId, Long curPathIdx) {
         Member member = findMemberByEmail(email);
         NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
         checkPathOwner(member, navigationPath);
@@ -90,7 +93,7 @@ public class EmergencyService {
                 .max(Comparator.comparing(CheckPoint::getPointIndex));
 
         if (previousCheckPointOptional.isEmpty()) {
-            return;
+            return null;
         }
 
         CheckPoint previousCheckPoint = previousCheckPointOptional.get();
@@ -100,12 +103,14 @@ public class EmergencyService {
                 .min(Comparator.comparing(CheckPoint::getPointIndex));
 
         if (nextCheckPointOptional.isEmpty()) {
-            return;
+            return null;
         }
 
         CheckPoint nextCheckPoint = nextCheckPointOptional.get();
 
         targetFilter.alertNextCheckPoint(navigationPath, navigationPath.getPathPoints(), nextCheckPoint);
+
+        return new CheckPointDto(nextCheckPoint);
     }
 
     public void removeNavigationPath(String email, Long naviPathId) {
@@ -195,7 +200,7 @@ public class EmergencyService {
 
             accumulatedDistance += distance;
 
-            if (accumulatedDistance >= wayPointDistance) {
+            if (accumulatedDistance >= checkPointDistance) {
                 wayPoints.add(
                         new CheckPoint(navigationPath, currentPoint.getCoordinate(),
                                 (long) i, accumulatedDistance, 0.0));
