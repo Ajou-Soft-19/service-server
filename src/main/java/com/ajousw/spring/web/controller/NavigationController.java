@@ -1,10 +1,10 @@
 package com.ajousw.spring.web.controller;
 
 import com.ajousw.spring.domain.member.UserPrinciple;
-import com.ajousw.spring.domain.navigation.NaverNavigationService;
-import com.ajousw.spring.domain.navigation.NavigationService;
-import com.ajousw.spring.domain.navigation.OsrmNavigationService;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
+import com.ajousw.spring.domain.navigation.route.NaverNavigationService;
+import com.ajousw.spring.domain.navigation.route.NavigationService;
+import com.ajousw.spring.domain.navigation.route.OsrmNavigationService;
 import com.ajousw.spring.web.controller.dto.navigation.CurrentPointUpdateDto;
 import com.ajousw.spring.web.controller.dto.navigation.NavigationQueryDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;

@@ -1,5 +1,6 @@
-package com.ajousw.spring.domain.navigation;
+package com.ajousw.spring.domain.navigation.route;
 
+import com.ajousw.spring.domain.navigation.EmergencyService;
 import com.ajousw.spring.domain.navigation.api.Provider;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import java.util.HashMap;
@@ -25,7 +26,7 @@ public class NaverNavigationService {
         if (isEmergency) {
             return emergencyService.createNavigationPath(email, Provider.NAVER, params, "Driving 5");
         }
-        
+
         return navigationService.createNavigationPath(email, Provider.NAVER, params, "Driving 5", saveResult);
     }
 

@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.navigation;
+package com.ajousw.spring.domain.navigation.route;
 
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
@@ -10,14 +10,14 @@ import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.dto.PathGuideDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
-import com.ajousw.spring.domain.navigation.route.entity.BatchInsertJdbcRepository;
-import com.ajousw.spring.domain.navigation.route.entity.MapLocation;
-import com.ajousw.spring.domain.navigation.route.entity.NavigationPath;
-import com.ajousw.spring.domain.navigation.route.entity.NavigationPathRepository;
-import com.ajousw.spring.domain.navigation.route.entity.PathGuide;
-import com.ajousw.spring.domain.navigation.route.entity.PathGuideRepository;
-import com.ajousw.spring.domain.navigation.route.entity.PathPoint;
-import com.ajousw.spring.domain.navigation.route.entity.PathPointRepository;
+import com.ajousw.spring.domain.navigation.entity.BatchInsertJdbcRepository;
+import com.ajousw.spring.domain.navigation.entity.MapLocation;
+import com.ajousw.spring.domain.navigation.entity.NavigationPath;
+import com.ajousw.spring.domain.navigation.entity.NavigationPathRepository;
+import com.ajousw.spring.domain.navigation.entity.PathGuide;
+import com.ajousw.spring.domain.navigation.entity.PathGuideRepository;
+import com.ajousw.spring.domain.navigation.entity.PathPoint;
+import com.ajousw.spring.domain.navigation.entity.PathPointRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

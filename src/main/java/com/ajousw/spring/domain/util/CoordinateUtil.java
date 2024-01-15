@@ -1,6 +1,6 @@
 package com.ajousw.spring.domain.util;
 
-import com.ajousw.spring.domain.navigation.route.entity.MapLocation;
+import com.ajousw.spring.domain.navigation.entity.MapLocation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
