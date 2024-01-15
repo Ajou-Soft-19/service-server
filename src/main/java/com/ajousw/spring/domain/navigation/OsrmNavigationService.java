@@ -16,10 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class OsrmNavigationService {
 
     private final NavigationService navigationService;
+    private final EmergencyService emergencyService;
 
     public NavigationPathDto getOsrmNavigationPath(String email, String source, String dest, String getSteps,
-                                                   boolean saveResult) {
+                                                   boolean saveResult, boolean isEmergency) {
         Map<String, String> params = createDrivingParams(source, dest, Map.of("getSteps", getSteps));
+
+        if (isEmergency) {
+            return emergencyService.createNavigationPath(email, Provider.OSRM, params, "OSRM");
+        }
+        
         return navigationService.createNavigationPath(email, Provider.OSRM, params, "OSRM", saveResult);
     }
 

@@ -30,6 +30,7 @@ public class SecurityConfig {
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtFilter jwtFilter;
     private final String[] adminUrl = {"/admin/**"};
+    private final String[] emergencyUrl = {"/api/emergency/**"};
     private final String[] permitAllUrl = {"/error"};
     private final String[] anonymousUrl = {"/anonymous"};
     @Value("${verification.encoder-strength}")
@@ -52,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers(adminUrl).hasRole("ADMIN")
                         .requestMatchers(permitAllUrl).permitAll()
                         .requestMatchers(anonymousUrl).anonymous()
+                        .requestMatchers(emergencyUrl).hasAnyRole("ADMIN", "EMERGENCY")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

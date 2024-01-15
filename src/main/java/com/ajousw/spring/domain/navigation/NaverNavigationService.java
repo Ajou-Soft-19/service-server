@@ -16,10 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class NaverNavigationService {
 
     private final NavigationService navigationService;
+    private final EmergencyService emergencyService;
 
     public NavigationPathDto getNaverNavigationPath(String email, String source, String dest, String option,
-                                                    boolean saveResult) {
+                                                    boolean saveResult, boolean isEmergency) {
         Map<String, String> params = createParams(source, dest, Map.of("option", option));
+
+        if (isEmergency) {
+            return emergencyService.createNavigationPath(email, Provider.NAVER, params, "Driving 5");
+        }
+        
         return navigationService.createNavigationPath(email, Provider.NAVER, params, "Driving 5", saveResult);
     }
 

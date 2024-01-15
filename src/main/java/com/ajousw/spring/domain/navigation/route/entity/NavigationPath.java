@@ -44,6 +44,8 @@ public class NavigationPath extends BaseTimeEntity {
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
 
+    private Boolean isEmergencyPath;
+
     @Enumerated
     private Provider provider;
 
@@ -75,15 +77,20 @@ public class NavigationPath extends BaseTimeEntity {
     @OneToMany(mappedBy = "navigationPath", fetch = FetchType.LAZY)
     private final List<PathGuide> guides = new ArrayList<>();
 
+    @OneToMany(mappedBy = "navigationPath", fetch = FetchType.LAZY)
+    private final List<CheckPoint> checkPoints = new ArrayList<>();
+
     private Long pathPointSize;
 
     @Builder
-    public NavigationPath(Member member, Vehicle vehicle, Provider provider, MapLocation sourceLocation,
+    public NavigationPath(Member member, Vehicle vehicle, Boolean isEmergencyPath, Provider provider,
+                          MapLocation sourceLocation,
                           MapLocation destLocation,
                           String queryType, Long distance, Long duration, Long currentPathPoint, Long pathPointSize) {
         this.member = member;
-        this.provider = provider;
         this.vehicle = vehicle;
+        this.isEmergencyPath = isEmergencyPath;
+        this.provider = provider;
         this.sourceLocation = sourceLocation;
         this.destLocation = destLocation;
         this.queryType = queryType;
@@ -99,5 +106,9 @@ public class NavigationPath extends BaseTimeEntity {
         }
 
         this.currentPathPoint = currentIdx;
+    }
+
+    public void addCheckPoints(List<CheckPoint> checkPoints) {
+        this.checkPoints.addAll(checkPoints);
     }
 }

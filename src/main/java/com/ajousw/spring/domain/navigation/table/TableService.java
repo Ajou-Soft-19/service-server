@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.navigation;
+package com.ajousw.spring.domain.navigation.table;
 
 import com.ajousw.spring.domain.navigation.api.NavigationPathProvider;
 import com.ajousw.spring.domain.navigation.api.Provider;

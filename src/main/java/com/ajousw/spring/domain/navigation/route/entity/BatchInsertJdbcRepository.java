@@ -12,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 @RequiredArgsConstructor
-public class PathPointJdbcRepository {
+public class BatchInsertJdbcRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -37,6 +37,35 @@ public class PathPointJdbcRepository {
             @Override
             public int getBatchSize() {
                 return pathPoints.size();
+            }
+        });
+    }
+
+    @Transactional
+    public void saveAllCheckPointsInBatch(List<CheckPoint> checkPoints) {
+        String sql =
+                "INSERT INTO check_point (check_point_id, navigation_path_id, coordinate, point_index, distance, duration)"
+                        + " VALUES (?, ?, ST_SetSRID(ST_MakePoint(?, ?), 4326), ?, ?, ?)";
+
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                CheckPoint checkPoint = checkPoints.get(i);
+
+                UUID checkPointId =
+                        checkPoint.getCheckPointId() != null ? checkPoint.getCheckPointId() : UUID.randomUUID();
+                ps.setObject(1, checkPointId);
+                ps.setObject(2, checkPoint.getNavigationPath().getNaviPathId());
+                ps.setDouble(3, checkPoint.getCoordinate().getX());
+                ps.setDouble(4, checkPoint.getCoordinate().getY());
+                ps.setLong(5, checkPoint.getPointIndex());
+                ps.setDouble(6, checkPoint.getDistance());
+                ps.setDouble(7, checkPoint.getDuration());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return checkPoints.size();
             }
         });
     }

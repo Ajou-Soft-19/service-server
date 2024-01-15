@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 public class NavigationPathDto {
     private Long naviPathId;
     private Long vehicleId;
+    private boolean isEmergencyPath;
     private Provider provider;
     private MapLocation sourceLocation;
     private MapLocation destLocation;
@@ -23,11 +24,13 @@ public class NavigationPathDto {
     private Long currentPathPoint;
     private List<PathPointDto> pathPoint;
     private List<PathGuideDto> pathGuide;
+    private List<CheckPointDto> checkPoint;
 
     public NavigationPathDto(NavigationPath navigationPath, List<PathPointDto> pathPoints,
                              List<PathGuideDto> pathGuides) {
         this.naviPathId = navigationPath.getNaviPathId();
 //        this.vehicleId = navigationPath.getVehicle().getVehicleId();
+        this.isEmergencyPath = false;
         this.provider = navigationPath.getProvider();
         this.sourceLocation = navigationPath.getSourceLocation();
         this.destLocation = navigationPath.getDestLocation();
@@ -38,6 +41,23 @@ public class NavigationPathDto {
         this.pathPointSize = ((Integer) pathPoints.size()).longValue();
         this.pathGuide = pathGuides;
         this.pathPoint = pathPoints;
+    }
+
+    public NavigationPathDto(NavigationPath navigationPath, List<PathPointDto> pathPoints,
+                             List<CheckPointDto> checkPoints, boolean isEmergencyPath) {
+        this.naviPathId = navigationPath.getNaviPathId();
+//        this.vehicleId = navigationPath.getVehicle().getVehicleId();
+        this.provider = navigationPath.getProvider();
+        this.isEmergencyPath = isEmergencyPath;
+        this.sourceLocation = navigationPath.getSourceLocation();
+        this.destLocation = navigationPath.getDestLocation();
+        this.queryType = navigationPath.getQueryType();
+        this.distance = navigationPath.getDistance();
+        this.duration = navigationPath.getDuration();
+        this.currentPathPoint = navigationPath.getCurrentPathPoint();
+        this.pathPointSize = ((Integer) pathPoints.size()).longValue();
+        this.pathPoint = pathPoints;
+        this.checkPoint = checkPoints;
     }
 
 }
