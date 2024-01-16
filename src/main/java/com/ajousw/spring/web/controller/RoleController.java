@@ -1,5 +1,7 @@
 package com.ajousw.spring.web.controller;
 
+import com.ajousw.spring.domain.auth_request.AuthRequestService;
+import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.MemberService;
 import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.member.enums.Role;
@@ -13,35 +15,48 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/roles")
+@RequestMapping("/api/auth/roles")
 public class RoleController {
     private final MemberService memberService;
+    private final AuthRequestService authRequestService;
+
 
     /* emergency 권한 요청 */
-    @PutMapping("")
+    @PostMapping("")
     public ApiResponseJson addEmergencyRole(@AuthenticationPrincipal UserPrinciple user) {
-        memberService.addRole(user.getEmail(), Role.ROLE_WAIT);
+        System.out.println("post");
+        Member member = memberService.findByEmail(user.getEmail());
+        authRequestService.addRole(member);
         return new ApiResponseJson(HttpStatus.OK, "success");
     }
 
-    @PutMapping("/reject/{id}")
+    // admin이 권한 요청 거절
+    @PostMapping("/reject/{id}")
     public ApiResponseJson rejectEmergencyRole(
             @AuthenticationPrincipal UserPrinciple user,
             @PathVariable Long id) {
-        // 1. 현재 admin 권한을 가지고 있는지 확인
-        // 2. 해당 유저 ROLE_WAIT 삭제
-        String result = memberService.removeRole(user.getEmail(), id, Role.ROLE_WAIT);
-        return new ApiResponseJson(HttpStatus.OK, result);
+        Member member = memberService.findByEmail(user.getEmail());
+        authRequestService.rejectRole(member, id);
+        return new ApiResponseJson(HttpStatus.OK, "success");
     }
 
-    @PutMapping("/approve/{id}")
+    // admin이 권한 요청 승인
+    @PostMapping("/approve/{id}")
     public ApiResponseJson approveEmergencyRole(
             @AuthenticationPrincipal UserPrinciple user,
             @PathVariable Long id) {
-        // 1. 현재 admin 권한을 가지고 있는지 확인
-        // 2. 해당 유저 ROLE_WAIT 삭제
-        // 3. ROLE_EMERGENCY 추가
+        Member member = memberService.findByEmail(user.getEmail());
+        authRequestService.approveRole(member, id);
         String result = memberService.approveRole(user.getEmail(), id);
         return new ApiResponseJson(HttpStatus.OK, result);
     }
-}
+
+    // admin이 특정 유저의 emergency 권한을 삭제
+    @PostMapping("/delete/{id}")
+    public ApiResponseJson deleteEmergency(
+            @AuthenticationPrincipal UserPrinciple user,
+            @PathVariable Long id) {
+        Member member = memberService.findByEmail(user.getEmail());
+        String result = memberService.removeRole(member, id, Role.ROLE_EMERGENCY_VEHICLE);
+        return new ApiResponseJson(HttpStatus.OK, result);
+    }}

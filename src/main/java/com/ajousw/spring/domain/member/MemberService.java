@@ -40,15 +40,14 @@ public class MemberService {
         }
     }
 
-    public void addRole(String email, Role role) {
-        Member member = this.findByEmail(email);
+    public void addRole(Long userId, Role role) {
+        Member member = this.findByMemberId(userId);
         this.checkRoleEmergencyAndWait(member);
         member.addRole(role);
         memberJpaRepository.save(member);
     }
 
-    public String removeRole(String email, Long targetId, Role role) {
-        Member member = this.findByEmail(email);
+    public String removeRole(Member member, Long targetId, Role role) {
         Member targetMember = this.findByMemberId(targetId);
         this.checkAdmin(member);
         if (!targetMember.hasRole(role)) {
@@ -66,7 +65,6 @@ public class MemberService {
         Member targetMember = this.findByMemberId(targetId);
         this.checkAdmin(member);
 
-        targetMember.removeRole(Role.ROLE_WAIT);
         targetMember.addRole(Role.ROLE_EMERGENCY_VEHICLE);
         memberJpaRepository.save(targetMember);
 
