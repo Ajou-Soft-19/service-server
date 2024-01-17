@@ -1,6 +1,6 @@
 package com.ajousw.spring.domain.navigation.dto;
 
-import com.ajousw.spring.domain.navigation.route.entity.PathGuide;
+import com.ajousw.spring.domain.navigation.entity.PathGuide;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

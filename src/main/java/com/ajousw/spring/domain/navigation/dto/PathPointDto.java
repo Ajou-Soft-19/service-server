@@ -1,7 +1,7 @@
 package com.ajousw.spring.domain.navigation.dto;
 
-import com.ajousw.spring.domain.navigation.route.entity.MapLocation;
-import com.ajousw.spring.domain.navigation.route.entity.PathPoint;
+import com.ajousw.spring.domain.navigation.entity.PathPoint;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,12 +12,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PathPointDto {
     private Long index;
-    private MapLocation location;
+    private List<Double> location;
 
     public PathPointDto(PathPoint pathPoint) {
         this.index = pathPoint.getIndex();
-        this.location = pathPoint.getLocation();
+        this.location = List.of(pathPoint.getCoordinate().getX(), pathPoint.getCoordinate().getY());
     }
-
 
 }

@@ -1,5 +1,6 @@
 package com.ajousw.spring.domain.navigation.api.provider;
 
+import com.ajousw.spring.domain.exception.ApiNotSupportedException;
 import com.ajousw.spring.domain.exception.BadApiResponseException;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
@@ -53,6 +54,11 @@ public class NaverNavigationApi implements NavigationApi {
             }
         }
         return response;
+    }
+
+    @Override
+    public ResponseEntity<String> getDistanceDurationTableInfo(Map<String, Object> params) {
+        throw new ApiNotSupportedException("지원하지 않는 API 입니다.");
     }
 
     private String setParams(String requestUrl, String start, String goal, String option) {

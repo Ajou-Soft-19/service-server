@@ -44,6 +44,9 @@ public class Member extends BaseTimeEntity {
     @Column(length = 255)
     private String profileImageUri;
 
+    @Column(length = 30)
+    private String phoneNumber;
+
     private String roles;
 
     private LocalDateTime lastLoginTime;

@@ -40,20 +40,16 @@ public class Vehicle extends BaseTimeEntity {
     @Enumerated
     private VehicleType vehicleType;
 
-    @Column(length = 30)
-    private String phoneNumber;
 
     @OneToOne(mappedBy = "vehicle", fetch = FetchType.LAZY)
     private VehicleStatus vehicleStatus;
 
     @Builder
-    public Vehicle(Member member, String countryCode, String licenceNumber, VehicleType vehicleType,
-                   String phoneNumber) {
+    public Vehicle(Member member, String countryCode, String licenceNumber, VehicleType vehicleType) {
         this.member = member;
         this.countryCode = countryCode;
         this.licenceNumber = licenceNumber;
         this.vehicleType = vehicleType;
-        this.phoneNumber = phoneNumber;
     }
 
     public void changeCountryCode(String countryCode) {

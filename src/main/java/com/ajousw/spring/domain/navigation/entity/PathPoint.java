@@ -1,6 +1,6 @@
-package com.ajousw.spring.domain.navigation.route.entity;
+package com.ajousw.spring.domain.navigation.entity;
 
-import jakarta.persistence.Embedded;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -12,6 +12,7 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Getter
@@ -28,13 +29,13 @@ public class PathPoint {
 
     private Long index;
 
-    @Embedded
-    private MapLocation location;
+    @Column(columnDefinition = "geometry(Point, 4326)")
+    private Point coordinate;
 
-    public PathPoint(NavigationPath navigationPath, Long index, double latitude, double longitude) {
+    public PathPoint(NavigationPath navigationPath, Long index, Point coordinate) {
         this.navigationPath = navigationPath;
         this.index = index;
-        this.location = new MapLocation(latitude, longitude);
+        this.coordinate = coordinate;
     }
 
 }

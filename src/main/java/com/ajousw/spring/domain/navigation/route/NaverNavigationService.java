@@ -1,5 +1,6 @@
-package com.ajousw.spring.domain.navigation;
+package com.ajousw.spring.domain.navigation.route;
 
+import com.ajousw.spring.domain.navigation.EmergencyService;
 import com.ajousw.spring.domain.navigation.api.Provider;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import java.util.HashMap;
@@ -16,12 +17,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class NaverNavigationService {
 
     private final NavigationService navigationService;
+    private final EmergencyService emergencyService;
 
     public NavigationPathDto getNaverNavigationPath(String email, String source, String dest, String option,
-                                                    boolean saveResult) {
+                                                    boolean saveResult, boolean isEmergency) {
         Map<String, String> params = createParams(source, dest, Map.of("option", option));
 
-        return navigationService.getNavigationPath(Provider.NAVER, params, "Driving 5", saveResult);
+        if (isEmergency) {
+            return emergencyService.createNavigationPath(email, Provider.NAVER, params, "Driving 5");
+        }
+
+        return navigationService.createNavigationPath(email, Provider.NAVER, params, "Driving 5", saveResult);
     }
 
     private Map<String, String> createParams(String source, String dest, Map<String, String> options) {
