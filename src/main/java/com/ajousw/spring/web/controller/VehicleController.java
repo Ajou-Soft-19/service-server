@@ -62,10 +62,4 @@ public class VehicleController {
                 .collect(Collectors.toList());
         return new ApiResponseJson(HttpStatus.OK, result);
     }
-
-    @GetMapping("/check/{memberId}/{vehicleId}")
-    public void getCheck(@PathVariable Long memberId,
-                         @PathVariable Long vehicleId) {
-        vehicleService.checkRole(memberId, vehicleId);
-    }
 }
