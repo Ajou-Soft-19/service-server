@@ -29,7 +29,7 @@ public class NavigationPathDto {
     public NavigationPathDto(NavigationPath navigationPath, List<PathPointDto> pathPoints,
                              List<PathGuideDto> pathGuides) {
         this.naviPathId = navigationPath.getNaviPathId();
-//        this.vehicleId = navigationPath.getVehicle().getVehicleId();
+        this.vehicleId = navigationPath.getVehicle().getVehicleId();
         this.isEmergencyPath = false;
         this.provider = navigationPath.getProvider();
         this.sourceLocation = navigationPath.getSourceLocation();
@@ -46,7 +46,7 @@ public class NavigationPathDto {
     public NavigationPathDto(NavigationPath navigationPath, List<PathPointDto> pathPoints,
                              List<CheckPointDto> checkPoints, boolean isEmergencyPath) {
         this.naviPathId = navigationPath.getNaviPathId();
-//        this.vehicleId = navigationPath.getVehicle().getVehicleId();
+        this.vehicleId = navigationPath.getVehicle().getVehicleId();
         this.provider = navigationPath.getProvider();
         this.isEmergencyPath = isEmergencyPath;
         this.sourceLocation = navigationPath.getSourceLocation();

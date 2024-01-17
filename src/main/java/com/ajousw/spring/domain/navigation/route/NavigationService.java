@@ -21,6 +21,9 @@ import com.ajousw.spring.domain.navigation.entity.PathPointRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import com.ajousw.spring.domain.vehicle.entity.Vehicle;
+import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -39,16 +42,17 @@ public class NavigationService {
     private final BatchInsertJdbcRepository batchInsertJdbcRepository;
     private final PathGuideRepository pathGuideRepository;
     private final MemberJpaRepository memberRepository;
+    private final VehicleRepository vehicleRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // TODO: API 라우트 별 정리
-    public NavigationPathDto createNavigationPath(String email, Provider provider, Map<String, String> params,
+    public NavigationPathDto createNavigationPath(String email, Long vehicleId, Provider provider, Map<String, String> params,
                                                   String queryType, boolean saveResult) {
         Member member = findMemberByEmail(email);
-
+        Vehicle vehicle = findVehicleById(vehicleId);
         NavigationApiResponse navigationQueryResult = pathProvider.getNavigationQueryResult(provider, params);
 
-        NavigationPath naviPath = createNaviPath(member, navigationQueryResult, provider, queryType,
+        NavigationPath naviPath = createNaviPath(member, vehicle, navigationQueryResult, provider, queryType,
                 navigationQueryResult.getPaths().size());
         if (saveResult) {
             navigationPathRepository.save(naviPath);
@@ -121,11 +125,18 @@ public class NavigationService {
         });
     }
 
-    private NavigationPath createNaviPath(Member member, NavigationApiResponse navResponse, Provider provider,
+    private Vehicle findVehicleById(Long vehicleId) {
+        return vehicleRepository.findByVehicleId(vehicleId).orElseThrow(() -> {
+            log.info("차량 ID가 존재하지 않습니다.");
+            return new IllegalArgumentException("No Such Vehicle");
+        });
+    }
+
+    private NavigationPath createNaviPath(Member member, Vehicle vehicle, NavigationApiResponse navResponse, Provider provider,
                                           String queryType, int pathSize) {
         return NavigationPath.builder()
                 .member(member)
-                .vehicle(null) // TODO: vehicle 조회
+                .vehicle(vehicle)
                 .isEmergencyPath(false)
                 .provider(provider)
                 .sourceLocation(new MapLocation(navResponse.getStart().get(0), navResponse.getStart().get(1)))

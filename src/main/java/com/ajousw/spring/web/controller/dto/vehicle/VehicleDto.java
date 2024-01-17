@@ -30,6 +30,4 @@ public class VehicleDto {
 
     @EnumValidation(enumClass = VehicleType.class)
     private VehicleType vehicleType;
-
-    private String phoneNumber;
 }

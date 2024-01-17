@@ -19,15 +19,15 @@ public class NaverNavigationService {
     private final NavigationService navigationService;
     private final EmergencyService emergencyService;
 
-    public NavigationPathDto getNaverNavigationPath(String email, String source, String dest, String option,
+    public NavigationPathDto getNaverNavigationPath(String email, Long vehicleId, String source, String dest, String option,
                                                     boolean saveResult, boolean isEmergency) {
         Map<String, String> params = createParams(source, dest, Map.of("option", option));
 
         if (isEmergency) {
-            return emergencyService.createNavigationPath(email, Provider.NAVER, params, "Driving 5");
+            return emergencyService.createNavigationPath(email, vehicleId, Provider.NAVER, params, "Driving 5");
         }
 
-        return navigationService.createNavigationPath(email, Provider.NAVER, params, "Driving 5", saveResult);
+        return navigationService.createNavigationPath(email, vehicleId, Provider.NAVER, params, "Driving 5", saveResult);
     }
 
     private Map<String, String> createParams(String source, String dest, Map<String, String> options) {

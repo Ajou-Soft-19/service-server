@@ -22,5 +22,4 @@ public class VehicleCreateDto {
     @EnumValidation(enumClass = VehicleType.class)
     private VehicleType vehicleType;
 
-    private String phoneNumber;
 }

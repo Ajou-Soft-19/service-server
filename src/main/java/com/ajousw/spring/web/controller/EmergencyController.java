@@ -31,6 +31,7 @@ public class EmergencyController {
     private final OsrmNavigationService osrmNavigationService;
     private final NaverNavigationService naverNavigationService;
 
+    // TODO: 이미 경로가 존재하는 경우 기존 경로 삭제
     @PostMapping("/api/emergency/navi/route")
     public ApiResponseJson getOsrmRoute(@Valid @RequestBody NavigationQueryDto navigationQueryDto,
                                         BindingResult bindingResult,
@@ -40,10 +41,10 @@ public class EmergencyController {
         NavigationPathDto navigationPath;
         switch (navigationQueryDto.getProvider()) {
             case NAVER -> navigationPath = naverNavigationService.getNaverNavigationPath(userPrinciple.getEmail(),
-                    navigationQueryDto.getSource(), navigationQueryDto.getDest(),
+                    navigationQueryDto.getVehicleId(), navigationQueryDto.getSource(), navigationQueryDto.getDest(),
                     navigationQueryDto.getOption(), true, true);
             case OSRM -> navigationPath = osrmNavigationService.getOsrmNavigationPath(userPrinciple.getEmail(),
-                    navigationQueryDto.getSource(), navigationQueryDto.getDest(),
+                    navigationQueryDto.getVehicleId(), navigationQueryDto.getSource(), navigationQueryDto.getDest(),
                     navigationQueryDto.getOption(), true, true);
             default -> throw new IllegalArgumentException("PROVIDER NOT SUPPORTED");
         }
