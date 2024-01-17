@@ -22,24 +22,14 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/vehicles")
+@RequestMapping("/api/vehicles")
 public class VehicleController {
     private final VehicleService vehicleService;
-
-    @DeleteMapping("")
-    public ApiResponseJson deleteVehicleAll() {
-        vehicleService.removeVehicleAll();
-        return new ApiResponseJson(HttpStatus.OK, "Delete Success");
-    }
-
     @DeleteMapping("/{vehicleId}")
-    public ApiResponseJson deleteVehicle(@PathVariable Long vehicleId) {
-        try {
-            vehicleService.removeVehicle(vehicleId);
-            return new ApiResponseJson(HttpStatus.OK, "success");
-        } catch(IllegalArgumentException e) {
-            return new ApiResponseJson(HttpStatus.BAD_REQUEST, 400,  e.getMessage());
-        }
+    public ApiResponseJson deleteVehicle(@AuthenticationPrincipal UserPrinciple user,
+                                         @PathVariable Long vehicleId) {
+        vehicleService.removeVehicle(user.getEmail(), vehicleId);
+        return new ApiResponseJson(HttpStatus.OK, "success");
     }
 
     @PostMapping("")
@@ -51,23 +41,31 @@ public class VehicleController {
 
     @PutMapping("/{id}")
     public ApiResponseJson updateVehicle(@PathVariable Long id,
+                                         @AuthenticationPrincipal UserPrinciple user,
                                          @Valid @RequestBody VehicleCreateDto vehicleCreateDto) {
-        vehicleService.updateVehicle(id, vehicleCreateDto);
+        vehicleService.updateVehicle(user.getEmail(), id, vehicleCreateDto);
         return new ApiResponseJson(HttpStatus.OK, "success");
     }
 
     @GetMapping("/{id}")
     @ResponseBody
-    public ApiResponseJson getVehicle(@PathVariable("id") Long vehicleId) {vehicleService.findVehicleByVehicleId(vehicleId);
-         VehicleDto result = new VehicleDto(vehicleService.findVehicleByVehicleId(vehicleId));
+    public ApiResponseJson getVehicle(@AuthenticationPrincipal UserPrinciple user,
+                                      @PathVariable("id") Long vehicleId) {
+        VehicleDto result = new VehicleDto(vehicleService.findVehicleByVehicleId(user.getEmail(), vehicleId));
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
     @GetMapping("/all")
     public ApiResponseJson getVehicleAll(@AuthenticationPrincipal UserPrinciple user) {
-        List<VehicleListDto> result = vehicleService.findVehicleAll(user.getEmail()).stream()
+        List<VehicleListDto> result = vehicleService.findVehicleAllByEmail(user.getEmail()).stream()
                 .map(v -> new VehicleListDto(v))
                 .collect(Collectors.toList());
         return new ApiResponseJson(HttpStatus.OK, result);
+    }
+
+    @GetMapping("/check/{memberId}/{vehicleId}")
+    public void getCheck(@PathVariable Long memberId,
+                         @PathVariable Long vehicleId) {
+        vehicleService.checkRole(memberId, vehicleId);
     }
 }
