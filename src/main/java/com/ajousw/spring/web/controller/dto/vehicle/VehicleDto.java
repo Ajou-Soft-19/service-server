@@ -17,7 +17,6 @@ public class VehicleDto {
         this.countryCode = vehicle.getCountryCode();
         this.vehicleType = vehicle.getVehicleType();
         this.licenceNumber = vehicle.getLicenceNumber();
-        this.phoneNumber = vehicle.getPhoneNumber();
         this.vehicleId = vehicle.getVehicleId();
     }
     @NotEmpty
