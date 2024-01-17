@@ -2,7 +2,6 @@ package com.ajousw.spring.web.controller;
 
 import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.vehicle.VehicleService;
-import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleCreateDto;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleDto;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleListDto;
@@ -17,8 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
-
-// TODO: DTO 생각해서 추가 및 수정
 
 @Slf4j
 @RestController
@@ -38,7 +35,6 @@ public class VehicleController {
                                       @Valid @RequestBody VehicleCreateDto vehicleCreateDto,
                                       BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            log.info("error = { ", bindingResult, " }");
             throw new IllegalArgumentException("잘못된 요청입니다.");
         }
         vehicleService.createVehicle(vehicleCreateDto, user.getEmail());
@@ -51,7 +47,6 @@ public class VehicleController {
                                          @Valid @RequestBody VehicleCreateDto vehicleCreateDto,
                                          BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            log.info("error = { ", bindingResult, " }");
             throw new IllegalArgumentException("잘못된 요청입니다.");
         }
         vehicleService.updateVehicle(user.getEmail(), id, vehicleCreateDto);
@@ -69,7 +64,7 @@ public class VehicleController {
     @GetMapping("/all")
     public ApiResponseJson getVehicleAll(@AuthenticationPrincipal UserPrinciple user) {
         List<VehicleListDto> result = vehicleService.findVehicleAllByEmail(user.getEmail()).stream()
-                .map(v -> new VehicleListDto(v))
+                .map(VehicleListDto::new)
                 .collect(Collectors.toList());
         return new ApiResponseJson(HttpStatus.OK, result);
     }
