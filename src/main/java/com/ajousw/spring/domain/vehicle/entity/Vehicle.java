@@ -51,4 +51,16 @@ public class Vehicle extends BaseTimeEntity {
         this.licenceNumber = licenceNumber;
         this.vehicleType = vehicleType;
     }
+
+    public void changeCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    public void changeLicenceNumber(String licenceNumber) {
+        this.licenceNumber = licenceNumber;
+    }
+
+    public void changeVehicleType(VehicleType vehicleType) {
+        this.vehicleType = vehicleType;
+    }
 }
