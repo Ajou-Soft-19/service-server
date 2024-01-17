@@ -5,12 +5,14 @@ import com.ajousw.spring.domain.member.MemberService;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleCreateDto;
+import com.ajousw.spring.web.controller.dto.vehicle.VehicleDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -23,7 +25,7 @@ public class VehicleService {
     /* 자동차 정보 수정 */
     @Transactional
     public void updateVehicle(String email, Long vehicleId, VehicleCreateDto vehicleCreateDto) {
-        Vehicle vehicle = findVehicleByVehicleId(email, vehicleId);
+        Vehicle vehicle = findVehicleByVehicleId(vehicleId);
         if (vehicleCreateDto.getVehicleType() != null) {
             vehicle.changeVehicleType(vehicleCreateDto.getVehicleType());
         }
@@ -39,7 +41,7 @@ public class VehicleService {
 
     /* 특정 자동차 삭제 */
     public void removeVehicle(String email, Long vehicleId) {
-        Vehicle vehicle = findVehicleByVehicleId(email, vehicleId);
+        Vehicle vehicle = findVehicleByVehicleId(vehicleId);
         vehicleRepository.delete(vehicle);
     }
 
@@ -64,10 +66,16 @@ public class VehicleService {
         }
     }
 
-    /* 특정 자동차 조회 */
-    public Vehicle findVehicleByVehicleId(String email, Long vehicleId) {
-        Member member = getMemberByEmail(email);
-        this.checkRole(member.getId(), vehicleId);
+    /* 차량 조회 함수 */
+    public VehicleDto getVehicle(String email, Long vehicleId) {
+        Vehicle vehicle = this.findVehicleByVehicleId(vehicleId);
+        Member member = memberService.findByEmail(email);
+        this.checkRole(member, vehicle);
+        return new VehicleDto(vehicle);
+    }
+
+    /* 차량 id로 자동차 조회 */
+    public Vehicle findVehicleByVehicleId(Long vehicleId) {
         return vehicleRepository.findByVehicleId(vehicleId).orElseThrow(() -> {
             log.info("해당 id의 차량의 존재하지 않음.");
             return new IllegalArgumentException("해당 id의 차량이 존재하지 않습니다.");
@@ -81,15 +89,14 @@ public class VehicleService {
     }
 
     /* 사용자의 등록된 모든 자동차 조회 아이디로 */
-    public List<Vehicle> findVehicleAllByEmail(Long memberId) {
-        Member member = getMemberById(memberId);
-        return vehicleRepository.findAllByMemberId(member.getId());
+    public List<Vehicle> findVehicleAllByMemberId(Long memberId) {
+        return vehicleRepository.findAllByMemberId(memberId);
     }
 
 
     // 권한 있는지 체크하는 메소드
-    public void checkRole(Long memberId, Long vehicleId) {
-        if (!vehicleRepository.findByVehicleId(vehicleId).get().getMember().getId().equals(memberId)) {
+    public void checkRole(Member member, Vehicle vehicle) {
+        if (!Objects.equals(member.getId(), vehicle.getMember().getId())) {
             log.info("사용자에게 권한이 없는 차량");
             throw new IllegalArgumentException("사용자에게 권한이 없는 차량입니다.");
         }
