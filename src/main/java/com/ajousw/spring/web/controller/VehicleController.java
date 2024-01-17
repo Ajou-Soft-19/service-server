@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,7 +32,11 @@ public class VehicleController {
 
     @PostMapping("")
     public ApiResponseJson setVehicle(@AuthenticationPrincipal UserPrinciple user,
-                              @Valid @RequestBody VehicleCreateDto vehicleCreateDto) {
+                                      @Valid @RequestBody VehicleCreateDto vehicleCreateDto,
+                                      BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new IllegalArgumentException("잘못된 요청입니다.");
+        }
         vehicleService.createVehicle(vehicleCreateDto, user.getEmail());
         return new ApiResponseJson(HttpStatus.OK, "success");
     }
@@ -39,7 +44,11 @@ public class VehicleController {
     @PutMapping("/{id}")
     public ApiResponseJson updateVehicle(@PathVariable Long id,
                                          @AuthenticationPrincipal UserPrinciple user,
-                                         @Valid @RequestBody VehicleCreateDto vehicleCreateDto) {
+                                         @Valid @RequestBody VehicleCreateDto vehicleCreateDto,
+                                         BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            throw new IllegalArgumentException("잘못된 요청입니다.");
+        }
         vehicleService.updateVehicle(user.getEmail(), id, vehicleCreateDto);
         return new ApiResponseJson(HttpStatus.OK, "success");
     }
@@ -48,7 +57,7 @@ public class VehicleController {
     @ResponseBody
     public ApiResponseJson getVehicle(@AuthenticationPrincipal UserPrinciple user,
                                       @PathVariable("id") Long vehicleId) {
-        VehicleDto result = new VehicleDto(vehicleService.findVehicleByVehicleId(user.getEmail(), vehicleId));
+        VehicleDto result = vehicleService.getVehicle(user.getEmail(), vehicleId);
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
@@ -58,11 +67,5 @@ public class VehicleController {
                 .map(VehicleListDto::new)
                 .collect(Collectors.toList());
         return new ApiResponseJson(HttpStatus.OK, result);
-    }
-
-    @GetMapping("/check/{memberId}/{vehicleId}")
-    public void getCheck(@PathVariable Long memberId,
-                         @PathVariable Long vehicleId) {
-        vehicleService.checkRole(memberId, vehicleId);
     }
 }
