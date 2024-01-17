@@ -34,6 +34,8 @@ public class VehicleStatus {
 
     private double direction;
 
+    private boolean isEmergencyVehicle;
+
     private LocalDateTime lastUpdateTime;
 
     @Builder
