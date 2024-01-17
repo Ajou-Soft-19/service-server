@@ -43,11 +43,6 @@ public class VehicleService {
         vehicleRepository.delete(vehicle);
     }
 
-    /* 자동차 전체 삭제*/
-//    public void removeVehicleAll() {
-//        vehicleRepository.deleteAll();
-//    }
-
     /* 자동차 등록 */
     public void createVehicle(VehicleCreateDto vehicleCreateDto, String email) {
         Member member = getMemberByEmail(email);
@@ -94,10 +89,7 @@ public class VehicleService {
 
     // 권한 있는지 체크하는 메소드
     public void checkRole(Long memberId, Long vehicleId) {
-        long cnt = this.findVehicleAllByEmail(memberId)
-                .stream().filter(v -> v.getVehicleId().equals(vehicleId)).count();
-
-        if (cnt == 0) {
+        if (!vehicleRepository.findByVehicleId(vehicleId).get().getMember().getId().equals(memberId)) {
             log.info("사용자에게 권한이 없는 차량");
             throw new IllegalArgumentException("사용자에게 권한이 없는 차량입니다.");
         }
