@@ -56,6 +56,9 @@ public class EmergencyService {
     @Value("${emergency.check-point-distance}")
     private double checkPointDistance;
 
+    @Value("${emergency.filter-radius}")
+    private Double filterRadius;
+
 
     public NavigationPathDto createNavigationPath(String email, Long vehicleId, Provider provider,
                                                   Map<String, String> params,
@@ -137,7 +140,7 @@ public class EmergencyService {
                 .filter(p -> filterPathInCheckPoint(nextCheckPoint, p))
                 .map(PathPointDto::new).toList();
 
-        targetFilter.alertNextCheckPoint(navigationPath, filteredPathPoints, nextCheckPoint,
+        targetFilter.alertNextCheckPoint(navigationPath, filteredPathPoints, nextCheckPoint, duration,
                 navigationPath.getVehicle().getLicenceNumber(), navigationPath.getVehicle().getVehicleType());
 
         return Optional.of(new CheckPointDto(nextCheckPoint, duration));
