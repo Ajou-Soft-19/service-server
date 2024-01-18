@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Slf4j
@@ -52,6 +53,9 @@ public class NaverNavigationApi implements NavigationApi {
                 log.error("Naver Direction 5 api {} error", e.getStatusCode(), e);
                 throw new BadApiResponseException("API 서버에 오류가 발생했습니다.");
             }
+        } catch (WebClientRequestException e) {
+            log.error("OSRM route api server down", e);
+            throw new BadApiResponseException("API 서버에 오류가 발생했습니다.");
         }
         return response;
     }

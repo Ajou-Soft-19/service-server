@@ -23,4 +23,11 @@ public class CheckPointDto {
         this.distance = checkPoint.getDistance();
         this.duration = checkPoint.getDuration();
     }
+
+    public CheckPointDto(CheckPoint checkPoint, double duration) {
+        this.pointIndex = checkPoint.getPointIndex();
+        this.location = List.of(checkPoint.getCoordinate().getX(), checkPoint.getCoordinate().getY());
+        this.distance = checkPoint.getDistance();
+        this.duration = duration;
+    }
 }
