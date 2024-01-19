@@ -49,7 +49,7 @@ public class EmergencyService {
     private final CheckPointRepository checkPointRepository;
     private final MemberJpaRepository memberRepository;
     private final VehicleRepository vehicleRepository;
-    private final AlertService targetFilter;
+    private final AlertService alertService;
     private final TableService tableService;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
@@ -116,7 +116,7 @@ public class EmergencyService {
         navigationPathRepository.deleteById(navigationPath.getNaviPathId());
         navigationPathRepository.flush();
     }
-
+    
     public Optional<CheckPointDto> updateCurrentPathPoint(String email, Long naviPathId, Long curPathIdx) {
         Member member = findMemberByEmail(email);
         NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
@@ -126,7 +126,6 @@ public class EmergencyService {
         List<CheckPoint> checkPoints = navigationPath.getCheckPoints();
         navigationPath.updateCurrentPathPoint(curPathIdx);
 
-        // TODO: 응급 차량 다음 checkpoint 주변 1km 차량 조회, 체크포인트 지났는지 판단
         Optional<CheckPoint> nextCheckPointOptional = findNextCheckPoint(curPathIdx, oldPathIdx,
                 checkPoints);
         if (nextCheckPointOptional.isEmpty()) {
@@ -140,7 +139,7 @@ public class EmergencyService {
                 .filter(p -> filterPathInCheckPoint(nextCheckPoint, p))
                 .map(PathPointDto::new).toList();
 
-        targetFilter.alertNextCheckPoint(navigationPath, filteredPathPoints, nextCheckPoint, duration,
+        alertService.alertNextCheckPoint(navigationPath, filteredPathPoints, nextCheckPoint, duration,
                 navigationPath.getVehicle().getLicenceNumber(), navigationPath.getVehicle().getVehicleType());
 
         return Optional.of(new CheckPointDto(nextCheckPoint, duration));

@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.util;
+package com.ajousw.spring.domain.pubsub;
 
 import com.ajousw.spring.domain.navigation.dto.BroadcastDto;
 import com.fasterxml.jackson.databind.ObjectMapper;

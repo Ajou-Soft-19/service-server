@@ -5,7 +5,7 @@ import com.ajousw.spring.domain.navigation.dto.BroadcastDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
 import com.ajousw.spring.domain.navigation.entity.CheckPoint;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
-import com.ajousw.spring.domain.util.RedisMessagePublisher;
+import com.ajousw.spring.domain.pubsub.RedisMessagePublisher;
 import com.ajousw.spring.domain.vehicle.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatusRepository;
@@ -26,7 +26,6 @@ public class AlertService {
 
     private final VehicleStatusRepository vehicleStatusRepository;
     private final RedisMessagePublisher redisMessagePublisher;
-
 
     // TODO: Function X 구현
     @Async
@@ -50,6 +49,7 @@ public class AlertService {
 
         AlertDto alertDto = new AlertDto(licenceNumber, vehicleType,
                 emergencyPath.getCurrentPathPoint(), filteredPathPoints);
+        
         redisMessagePublisher.publishAlertMessageToSocket(new BroadcastDto(targetSession, alertDto));
     }
 

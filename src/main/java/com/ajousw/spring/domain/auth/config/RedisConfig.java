@@ -1,16 +1,23 @@
 package com.ajousw.spring.domain.auth.config;
 
+import com.ajousw.spring.domain.pubsub.PointUpdateListener;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfig {
+
+    private final PointUpdateListener pointUpdateChannel;
 
     @Value("${spring.data.redis.host}")
     private String host;
@@ -41,8 +48,21 @@ public class RedisConfig {
     }
 
     @Bean
+    public RedisMessageListenerContainer redisMessageListener(RedisConnectionFactory redisConnectionFactory) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(redisConnectionFactory);
+        container.addMessageListener(pointUpdateChannel, updateCurrentPathPoint());
+        return container;
+    }
+
+    @Bean
     public ChannelTopic alertBroadcast() {
         return new ChannelTopic("alertBroadcast");
     }
-    
+
+    @Bean
+    public ChannelTopic updateCurrentPathPoint() {
+        return new ChannelTopic("updateCurrentPathPoint");
+    }
+
 }

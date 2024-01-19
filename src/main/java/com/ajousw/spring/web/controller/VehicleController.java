@@ -7,15 +7,23 @@ import com.ajousw.spring.web.controller.dto.vehicle.VehicleDto;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleListDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -23,6 +31,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/vehicles")
 public class VehicleController {
     private final VehicleService vehicleService;
+
     @DeleteMapping("/{vehicleId}")
     public ApiResponseJson deleteVehicle(@AuthenticationPrincipal UserPrinciple user,
                                          @PathVariable Long vehicleId) {
@@ -37,8 +46,8 @@ public class VehicleController {
         if (bindingResult.hasErrors()) {
             throw new IllegalArgumentException("잘못된 요청입니다.");
         }
-        vehicleService.createVehicle(vehicleCreateDto, user.getEmail());
-        return new ApiResponseJson(HttpStatus.OK, "success");
+        Long vehicleId = vehicleService.createVehicle(vehicleCreateDto, user.getEmail());
+        return new ApiResponseJson(HttpStatus.OK, Map.of("vehicleId", vehicleId));
     }
 
     @PutMapping("/{id}")
