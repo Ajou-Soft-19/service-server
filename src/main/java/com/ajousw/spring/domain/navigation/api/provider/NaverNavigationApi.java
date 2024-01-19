@@ -48,7 +48,9 @@ public class NaverNavigationApi implements NavigationApi {
                     .block();
         } catch (WebClientResponseException e) {
             HttpStatusCode statusCode = e.getStatusCode();
-
+            if (statusCode.is4xxClientError()) {
+                throw new BadApiResponseException("잘못된 요청입니다.");
+            }
             if (statusCode.isError()) {
                 log.error("Naver Direction 5 api {} error", e.getStatusCode(), e);
                 throw new BadApiResponseException("API 서버에 오류가 발생했습니다.");
