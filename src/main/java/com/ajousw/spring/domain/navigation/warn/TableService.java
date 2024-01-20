@@ -38,7 +38,7 @@ public class TableService {
         for (int i = 0; i < destinations.size(); i++) {
             Double distance = distances.get(i);
             Double duration = durations.get(i);
-            tableQueryResultDtos.add(new TableQueryResultDto(i, source, destinations.get(i), distance, duration));
+            tableQueryResultDtos.add(new TableQueryResultDto(i, source, destinations.get(i), duration, distance));
         }
 
         return tableQueryResultDtos;

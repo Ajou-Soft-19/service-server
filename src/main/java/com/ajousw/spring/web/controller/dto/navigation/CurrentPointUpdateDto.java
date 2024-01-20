@@ -18,4 +18,6 @@ public class CurrentPointUpdateDto {
     @Min(0)
     private Long currentPoint;
 
+    private String email;
+
 }

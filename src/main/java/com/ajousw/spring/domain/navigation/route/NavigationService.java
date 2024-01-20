@@ -18,12 +18,12 @@ import com.ajousw.spring.domain.navigation.entity.PathGuide;
 import com.ajousw.spring.domain.navigation.entity.PathGuideRepository;
 import com.ajousw.spring.domain.navigation.entity.PathPoint;
 import com.ajousw.spring.domain.navigation.entity.PathPointRepository;
+import com.ajousw.spring.domain.vehicle.entity.Vehicle;
+import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import com.ajousw.spring.domain.vehicle.entity.Vehicle;
-import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -46,10 +46,12 @@ public class NavigationService {
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     // TODO: API 라우트 별 정리
-    public NavigationPathDto createNavigationPath(String email, Long vehicleId, Provider provider, Map<String, String> params,
+    public NavigationPathDto createNavigationPath(String email, Long vehicleId, Provider provider,
+                                                  Map<String, String> params,
                                                   String queryType, boolean saveResult) {
         Member member = findMemberByEmail(email);
         Vehicle vehicle = findVehicleById(vehicleId);
+        deleteOldNavigationPath(vehicle);
         NavigationApiResponse navigationQueryResult = pathProvider.getNavigationQueryResult(provider, params);
 
         NavigationPath naviPath = createNaviPath(member, vehicle, navigationQueryResult, provider, queryType,
@@ -68,7 +70,22 @@ public class NavigationService {
         return createNavigationPathDto(naviPath, pathPoints, pathGuides);
     }
 
-    // TODO: 일반 차량은 guide 삭제
+    private void deleteOldNavigationPath(Vehicle vehicle) {
+        Optional<NavigationPath> oldNaviPathOptional = navigationPathRepository.
+                findNavigationPathByVehicle(vehicle);
+
+        if (oldNaviPathOptional.isEmpty()) {
+            return;
+        }
+
+        NavigationPath navigationPath = oldNaviPathOptional.get();
+        pathPointRepository.deleteByNavigationPathId(navigationPath.getNaviPathId());
+        pathGuideRepository.deleteByNavigationPathId(navigationPath.getNaviPathId());
+        navigationPathRepository.deleteById(navigationPath.getNaviPathId());
+        navigationPathRepository.flush();
+    }
+
+    // TODO: 일반 차량은 guide 삭제?
     @Transactional(readOnly = true)
     public NavigationPathDto getNavigationPathById(String email, Long naviPathId) {
         Member member = findMemberByEmail(email);
@@ -91,9 +108,10 @@ public class NavigationService {
         NavigationPath navigationPath = findNavigationPathById(naviPathId);
         checkPathOwner(member, navigationPath);
 
-        pathGuideRepository.deleteAllInBatch(navigationPath.getGuides());
-        pathPointRepository.deleteAllInBatch(navigationPath.getPathPoints());
+        pathPointRepository.deleteByNavigationPathId(navigationPath.getNaviPathId());
+        pathGuideRepository.deleteByNavigationPathId(navigationPath.getNaviPathId());
         navigationPathRepository.deleteById(navigationPath.getNaviPathId());
+        navigationPathRepository.flush();
     }
 
 
@@ -132,7 +150,8 @@ public class NavigationService {
         });
     }
 
-    private NavigationPath createNaviPath(Member member, Vehicle vehicle, NavigationApiResponse navResponse, Provider provider,
+    private NavigationPath createNaviPath(Member member, Vehicle vehicle, NavigationApiResponse navResponse,
+                                          Provider provider,
                                           String queryType, int pathSize) {
         return NavigationPath.builder()
                 .member(member)

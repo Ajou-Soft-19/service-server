@@ -6,13 +6,12 @@ import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleCreateDto;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleDto;
+import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -46,7 +45,7 @@ public class VehicleService {
     }
 
     /* 자동차 등록 */
-    public void createVehicle(VehicleCreateDto vehicleCreateDto, String email) {
+    public Long createVehicle(VehicleCreateDto vehicleCreateDto, String email) {
         Member member = getMemberByEmail(email);
         validationLicence(vehicleCreateDto.getLicenceNumber());
         Vehicle vehicle = Vehicle.builder()
@@ -57,6 +56,8 @@ public class VehicleService {
                 .build();
 
         vehicleRepository.save(vehicle);
+
+        return vehicle.getVehicleId();
     }
 
     private void validationLicence(String licence) {

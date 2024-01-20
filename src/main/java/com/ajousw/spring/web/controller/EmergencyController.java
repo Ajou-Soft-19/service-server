@@ -11,6 +11,7 @@ import com.ajousw.spring.web.controller.dto.navigation.NavigationQueryDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.repository.query.Param;
@@ -67,10 +68,11 @@ public class EmergencyController {
                                                  @AuthenticationPrincipal UserPrinciple userPrinciple) {
         checkBindingResult(bindingResult);
 
-        CheckPointDto checkPoint = emergencyService.updateCurrentPathPoint(userPrinciple.getEmail(),
+        Optional<CheckPointDto> checkPointDto = emergencyService.updateCurrentPathPoint(userPrinciple.getEmail(),
                 updateDto.getNaviPathId(), updateDto.getCurrentPoint());
 
-        return new ApiResponseJson(HttpStatus.OK, Map.of("nextPoint", checkPoint == null ? "Not Yet" : checkPoint));
+        return new ApiResponseJson(HttpStatus.OK,
+                Map.of("nextPoint", checkPointDto.isEmpty() ? "No New CheckPoint" : checkPointDto.get()));
     }
 
     @PostMapping("/api/emergency/navi/path/remove")

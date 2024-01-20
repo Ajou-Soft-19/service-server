@@ -39,10 +39,10 @@ public class NavigationController {
         switch (navigationQueryDto.getProvider()) {
             case NAVER -> navigationPath = naverNavigationService.getNaverNavigationPath(userPrinciple.getEmail(),
                     navigationQueryDto.getVehicleId(), navigationQueryDto.getSource(), navigationQueryDto.getDest(),
-                    navigationQueryDto.getOption(), true, false);
+                    navigationQueryDto.getOption(), false, false);
             case OSRM -> navigationPath = osrmNavigationService.getOsrmNavigationPath(userPrinciple.getEmail(),
                     navigationQueryDto.getVehicleId(), navigationQueryDto.getSource(), navigationQueryDto.getDest(),
-                    navigationQueryDto.getOption(), true, false);
+                    navigationQueryDto.getOption(), false, false);
             default -> throw new IllegalArgumentException("아직 지원하지 않는 API 입니다.");
         }
 
