@@ -1,15 +1,16 @@
 package com.ajousw.spring.domain.navigation.api;
 
 
-import com.ajousw.spring.domain.exception.ApiNotSupportedException;
 import com.ajousw.spring.domain.navigation.api.info.SafeNumberParser;
 import com.ajousw.spring.domain.navigation.api.info.route.NaverNavigationApiResponse;
 import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
 import com.ajousw.spring.domain.navigation.api.info.route.OsrmNavigationApiResponse;
 import com.ajousw.spring.domain.navigation.api.info.table.TableApiResponse;
-import com.ajousw.spring.domain.navigation.api.provider.NaverNavigationApi;
 import com.ajousw.spring.domain.navigation.api.provider.NavigationApi;
-import com.ajousw.spring.domain.navigation.api.provider.OsrmNavigationApi;
+import com.ajousw.spring.domain.navigation.api.provider.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.impl.NaverNavigationApi;
+import com.ajousw.spring.domain.navigation.api.provider.impl.OsrmNavigationApi;
+import com.ajousw.spring.domain.navigation.exception.ApiNotSupportedException;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

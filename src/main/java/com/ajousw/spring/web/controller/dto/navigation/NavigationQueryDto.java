@@ -1,7 +1,7 @@
 package com.ajousw.spring.web.controller.dto.navigation;
 
 import com.ajousw.spring.domain.member.enums.EnumValidation;
-import com.ajousw.spring.domain.navigation.api.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.Provider;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;

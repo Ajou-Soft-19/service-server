@@ -1,7 +1,8 @@
 package com.ajousw.spring.web.controller;
 
 import com.ajousw.spring.domain.member.UserPrinciple;
-import com.ajousw.spring.domain.navigation.NavigationService;
+import com.ajousw.spring.domain.navigation.EmergencyNavigationService;
+import com.ajousw.spring.domain.navigation.dto.CheckPointDto;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.route.NaverNavigationService;
 import com.ajousw.spring.domain.navigation.route.OsrmNavigationService;
@@ -9,6 +10,8 @@ import com.ajousw.spring.web.controller.dto.navigation.CurrentPointUpdateDto;
 import com.ajousw.spring.web.controller.dto.navigation.NavigationQueryDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,16 +23,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class NavigationController {
-
-    private final NavigationService navigationService;
+public class EmergencyNavigationController {
+    private final EmergencyNavigationService emergencyNavigationService;
     private final OsrmNavigationService osrmNavigationService;
     private final NaverNavigationService naverNavigationService;
 
-    @PostMapping("/api/navi/route")
+    @PostMapping("/api/emergency/navi/route")
     public ApiResponseJson getOsrmRoute(@Valid @RequestBody NavigationQueryDto navigationQueryDto,
                                         BindingResult bindingResult,
                                         @AuthenticationPrincipal UserPrinciple userPrinciple) {
@@ -39,41 +42,43 @@ public class NavigationController {
         switch (navigationQueryDto.getProvider()) {
             case NAVER -> navigationPath = naverNavigationService.getNaverNavigationPath(userPrinciple.getEmail(),
                     navigationQueryDto.getVehicleId(), navigationQueryDto.getSource(), navigationQueryDto.getDest(),
-                    navigationQueryDto.getOption(), false, false);
+                    navigationQueryDto.getOption(), true, true);
             case OSRM -> navigationPath = osrmNavigationService.getOsrmNavigationPath(userPrinciple.getEmail(),
                     navigationQueryDto.getVehicleId(), navigationQueryDto.getSource(), navigationQueryDto.getDest(),
-                    navigationQueryDto.getOption(), false, false);
-            default -> throw new IllegalArgumentException("아직 지원하지 않는 API 입니다.");
+                    navigationQueryDto.getOption(), true, true);
+            default -> throw new IllegalArgumentException("PROVIDER NOT SUPPORTED");
         }
 
         return new ApiResponseJson(HttpStatus.OK, navigationPath);
     }
 
-    @GetMapping("/api/navi/path")
+    @GetMapping("/api/emergency/navi/path")
     public ApiResponseJson getSavedNavigationPath(@RequestParam(value = "naviPathId") Long naviPathId,
                                                   @AuthenticationPrincipal UserPrinciple userPrinciple) {
         NavigationPathDto navigationPathDto =
-                navigationService.getNavigationPathById(userPrinciple.getEmail(), naviPathId);
+                emergencyNavigationService.getNavigationPathById(userPrinciple.getEmail(), naviPathId);
 
         return new ApiResponseJson(HttpStatus.OK, navigationPathDto);
     }
 
-    @PostMapping("/api/navi/path/current-position/update")
+    @PostMapping("/api/emergency/navi/path/current-position/update")
     public ApiResponseJson updateCurrentPosition(@Valid @RequestBody CurrentPointUpdateDto updateDto,
                                                  BindingResult bindingResult,
                                                  @AuthenticationPrincipal UserPrinciple userPrinciple) {
         checkBindingResult(bindingResult);
 
-        navigationService.updateCurrentPathPoint(userPrinciple.getEmail(),
+        Optional<CheckPointDto> checkPointDto = emergencyNavigationService.updateCurrentPathPoint(
+                userPrinciple.getEmail(),
                 updateDto.getNaviPathId(), updateDto.getCurrentPoint());
 
-        return new ApiResponseJson(HttpStatus.OK, "OK");
+        return new ApiResponseJson(HttpStatus.OK,
+                Map.of("nextPoint", checkPointDto.isEmpty() ? "No New CheckPoint" : checkPointDto.get()));
     }
 
-    @PostMapping("/api/navi/path/remove")
+    @PostMapping("/api/emergency/navi/path/remove")
     public ApiResponseJson removeNavigationPath(@RequestParam(value = "naviPathId") Long naviPathId,
                                                 @AuthenticationPrincipal UserPrinciple userPrinciple) {
-        navigationService.removeNavigationPath(userPrinciple.getEmail(), naviPathId);
+        emergencyNavigationService.removeNavigationPath(userPrinciple.getEmail(), naviPathId);
 
         return new ApiResponseJson(HttpStatus.OK, "OK");
     }

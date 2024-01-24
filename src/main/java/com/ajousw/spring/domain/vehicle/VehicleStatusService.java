@@ -1,14 +1,13 @@
 package com.ajousw.spring.domain.vehicle;
 
-import com.ajousw.spring.domain.vehicle.entity.VehicleStatusRepository;
+import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleStatusListDto;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -25,7 +24,5 @@ public class VehicleStatusService {
                 .forEach(v -> vehicleStatusListDtoList.add(new VehicleStatusListDto(v.getVehicle())));
         return vehicleStatusListDtoList;
     }
-
-
 
 }

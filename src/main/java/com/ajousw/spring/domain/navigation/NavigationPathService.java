@@ -1,15 +1,14 @@
 package com.ajousw.spring.domain.navigation;
 
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
-import com.ajousw.spring.domain.navigation.entity.NavigationPathRepository;
+import com.ajousw.spring.domain.navigation.entity.repository.NavigationPathRepository;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
-import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
+import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Slf4j
 @Service
