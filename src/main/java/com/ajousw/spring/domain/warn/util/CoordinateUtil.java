@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.util;
+package com.ajousw.spring.domain.warn.util;
 
 import com.ajousw.spring.domain.navigation.entity.MapLocation;
 import lombok.RequiredArgsConstructor;

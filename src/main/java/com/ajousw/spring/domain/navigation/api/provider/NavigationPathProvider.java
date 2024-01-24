@@ -1,8 +1,8 @@
-package com.ajousw.spring.domain.navigation.api;
+package com.ajousw.spring.domain.navigation.api.provider;
 
+import com.ajousw.spring.domain.navigation.api.NavigationApiFactory;
 import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
 import com.ajousw.spring.domain.navigation.api.info.table.TableApiResponse;
-import com.ajousw.spring.domain.navigation.api.provider.NavigationApi;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;

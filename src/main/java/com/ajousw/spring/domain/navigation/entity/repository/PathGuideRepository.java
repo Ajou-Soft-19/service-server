@@ -1,5 +1,6 @@
-package com.ajousw.spring.domain.navigation.entity;
+package com.ajousw.spring.domain.navigation.entity.repository;
 
+import com.ajousw.spring.domain.navigation.entity.PathGuide;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

@@ -1,8 +1,8 @@
-package com.ajousw.spring.domain.navigation.warn;
+package com.ajousw.spring.domain.navigation.route;
 
-import com.ajousw.spring.domain.navigation.api.NavigationPathProvider;
-import com.ajousw.spring.domain.navigation.api.Provider;
 import com.ajousw.spring.domain.navigation.api.info.table.TableApiResponse;
+import com.ajousw.spring.domain.navigation.api.provider.NavigationPathProvider;
+import com.ajousw.spring.domain.navigation.api.provider.Provider;
 import com.ajousw.spring.domain.navigation.dto.TableQueryResultDto;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class TableService {
+public class OsrmTableService {
 
     private final NavigationPathProvider pathProvider;
 

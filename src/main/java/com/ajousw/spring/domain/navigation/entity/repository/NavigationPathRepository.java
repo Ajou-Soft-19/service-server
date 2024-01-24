@@ -1,5 +1,6 @@
-package com.ajousw.spring.domain.navigation.entity;
+package com.ajousw.spring.domain.navigation.entity.repository;
 
+import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

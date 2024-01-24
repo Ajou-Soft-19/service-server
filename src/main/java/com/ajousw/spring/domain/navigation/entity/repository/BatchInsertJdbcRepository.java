@@ -1,5 +1,7 @@
-package com.ajousw.spring.domain.navigation.entity;
+package com.ajousw.spring.domain.navigation.entity.repository;
 
+import com.ajousw.spring.domain.navigation.entity.CheckPoint;
+import com.ajousw.spring.domain.navigation.entity.PathPoint;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;

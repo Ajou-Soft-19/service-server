@@ -3,7 +3,7 @@ package com.ajousw.spring.domain.vehicle;
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.MemberService;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
-import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
+import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleCreateDto;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleDto;
 import java.util.List;

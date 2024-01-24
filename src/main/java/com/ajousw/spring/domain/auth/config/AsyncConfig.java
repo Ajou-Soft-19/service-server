@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.navigation.warn;
+package com.ajousw.spring.domain.auth.config;
 
 import java.util.concurrent.Executor;
 import org.springframework.context.annotation.Bean;

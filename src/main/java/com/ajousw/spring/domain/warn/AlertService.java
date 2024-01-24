@@ -1,14 +1,14 @@
-package com.ajousw.spring.domain.navigation.warn;
+package com.ajousw.spring.domain.warn;
 
 import com.ajousw.spring.domain.navigation.dto.AlertDto;
 import com.ajousw.spring.domain.navigation.dto.BroadcastDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
 import com.ajousw.spring.domain.navigation.entity.CheckPoint;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
-import com.ajousw.spring.domain.pubsub.RedisMessagePublisher;
 import com.ajousw.spring.domain.vehicle.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
-import com.ajousw.spring.domain.vehicle.entity.VehicleStatusRepository;
+import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
+import com.ajousw.spring.domain.warn.pubsub.RedisMessagePublisher;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,10 +35,10 @@ public class AlertService {
                                     VehicleType vehicleType) {
 //        List<VehicleStatus> targetVehicleStatus = vehicleStatusRepository.findAllWithinRadius(
 //                nextCheckPoint.getCoordinate().getY(), nextCheckPoint.getCoordinate().getX(), filterRadius);
-
+        // 일단 모든 차량을 대상으로 알림
         List<VehicleStatus> targetVehicleStatus = vehicleStatusRepository.findAll();
 
-//        // 나중엔 구분해서 처리 현재는 그냥 주변에 있는 차들에게 알림
+//
 //        List<VehicleStatus> vehicleUsingNavi = targetVehicleStatus.stream()
 //                .filter(VehicleStatus::isUsingNavi).toList();
 //        List<VehicleStatus> vehicleNotUsingNavi = targetVehicleStatus.stream()
@@ -49,7 +49,7 @@ public class AlertService {
 
         AlertDto alertDto = new AlertDto(licenceNumber, vehicleType,
                 emergencyPath.getCurrentPathPoint(), filteredPathPoints);
-        
+
         redisMessagePublisher.publishAlertMessageToSocket(new BroadcastDto(targetSession, alertDto));
     }
 

@@ -2,27 +2,27 @@ package com.ajousw.spring.domain.navigation;
 
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
-import com.ajousw.spring.domain.navigation.api.NavigationPathProvider;
-import com.ajousw.spring.domain.navigation.api.Provider;
 import com.ajousw.spring.domain.navigation.api.info.route.Coordinate;
 import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
+import com.ajousw.spring.domain.navigation.api.provider.NavigationPathProvider;
+import com.ajousw.spring.domain.navigation.api.provider.Provider;
 import com.ajousw.spring.domain.navigation.dto.CheckPointDto;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
 import com.ajousw.spring.domain.navigation.dto.TableQueryResultDto;
-import com.ajousw.spring.domain.navigation.entity.BatchInsertJdbcRepository;
 import com.ajousw.spring.domain.navigation.entity.CheckPoint;
-import com.ajousw.spring.domain.navigation.entity.CheckPointRepository;
 import com.ajousw.spring.domain.navigation.entity.MapLocation;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
-import com.ajousw.spring.domain.navigation.entity.NavigationPathRepository;
 import com.ajousw.spring.domain.navigation.entity.PathPoint;
-import com.ajousw.spring.domain.navigation.entity.PathPointRepository;
-import com.ajousw.spring.domain.navigation.warn.AlertService;
-import com.ajousw.spring.domain.navigation.warn.TableService;
-import com.ajousw.spring.domain.util.CoordinateUtil;
+import com.ajousw.spring.domain.navigation.entity.repository.BatchInsertJdbcRepository;
+import com.ajousw.spring.domain.navigation.entity.repository.CheckPointRepository;
+import com.ajousw.spring.domain.navigation.entity.repository.NavigationPathRepository;
+import com.ajousw.spring.domain.navigation.entity.repository.PathPointRepository;
+import com.ajousw.spring.domain.navigation.route.OsrmTableService;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
-import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
+import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
+import com.ajousw.spring.domain.warn.AlertService;
+import com.ajousw.spring.domain.warn.util.CoordinateUtil;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -41,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class EmergencyService {
+public class EmergencyNavigationService {
     private final NavigationPathProvider pathProvider;
     private final NavigationPathRepository navigationPathRepository;
     private final PathPointRepository pathPointRepository;
@@ -50,7 +50,7 @@ public class EmergencyService {
     private final MemberJpaRepository memberRepository;
     private final VehicleRepository vehicleRepository;
     private final AlertService alertService;
-    private final TableService tableService;
+    private final OsrmTableService osrmTableService;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     @Value("${emergency.check-point-distance}")
@@ -59,13 +59,12 @@ public class EmergencyService {
     @Value("${emergency.filter-radius}")
     private Double filterRadius;
 
-
     public NavigationPathDto createNavigationPath(String email, Long vehicleId, Provider provider,
                                                   Map<String, String> params,
                                                   String queryType) {
         Member member = findMemberByEmail(email);
         Vehicle vehicle = findVehicleById(vehicleId);
-        deleteOldNavigationPath(vehicle);
+//        deleteOldNavigationPath(vehicle);
 
         NavigationApiResponse navigationQueryResult = pathProvider.getNavigationQueryResult(provider, params);
 
@@ -81,6 +80,7 @@ public class EmergencyService {
         return createNavigationPathDto(naviPath, pathPoints, checkPoints);
     }
 
+    // 삭제 예정
     private void deleteOldNavigationPath(Vehicle vehicle) {
         Optional<NavigationPath> oldNaviPathOptional = navigationPathRepository.
                 findNavigationPathByVehicle(vehicle);
@@ -116,7 +116,7 @@ public class EmergencyService {
         navigationPathRepository.deleteById(navigationPath.getNaviPathId());
         navigationPathRepository.flush();
     }
-    
+
     public Optional<CheckPointDto> updateCurrentPathPoint(String email, Long naviPathId, Long curPathIdx) {
         Member member = findMemberByEmail(email);
         NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
@@ -126,6 +126,13 @@ public class EmergencyService {
         List<CheckPoint> checkPoints = navigationPath.getCheckPoints();
         navigationPath.updateCurrentPathPoint(curPathIdx);
 
+        return alertNextCheckPointIfPassedCheckPoint(curPathIdx, navigationPath, oldPathIdx, checkPoints);
+    }
+
+    private Optional<CheckPointDto> alertNextCheckPointIfPassedCheckPoint(Long curPathIdx,
+                                                                          NavigationPath navigationPath,
+                                                                          Long oldPathIdx,
+                                                                          List<CheckPoint> checkPoints) {
         Optional<CheckPoint> nextCheckPointOptional = findNextCheckPoint(curPathIdx, oldPathIdx,
                 checkPoints);
         if (nextCheckPointOptional.isEmpty()) {
@@ -145,16 +152,6 @@ public class EmergencyService {
         return Optional.of(new CheckPointDto(nextCheckPoint, duration));
     }
 
-    private double calculateDuration(Long curPathIdx, NavigationPath navigationPath, Long oldPathIdx) {
-        PathPoint prevPathPoint = navigationPath.getPathPoints().get(oldPathIdx.intValue());
-        PathPoint curPathPoint = navigationPath.getPathPoints().get(curPathIdx.intValue());
-        List<TableQueryResultDto> queryResultDtos = tableService.getTableOfDistancesAndDurations(
-                coordinateToString(prevPathPoint.getCoordinate()),
-                List.of(coordinateToString(curPathPoint.getCoordinate())));
-        TableQueryResultDto tableQueryResultDto = queryResultDtos.get(0);
-        return tableQueryResultDto.getDuration();
-    }
-
     private Optional<CheckPoint> findNextCheckPoint(Long curPathIdx, Long oldPathIdx, List<CheckPoint> checkPoints) {
         Optional<CheckPoint> previousCheckPointOptional = checkPoints.stream()
                 .filter(c -> c.getPointIndex() > oldPathIdx && c.getPointIndex() <= curPathIdx)
@@ -169,6 +166,16 @@ public class EmergencyService {
         return checkPoints.stream()
                 .filter(c -> c.getPointIndex() > previousCheckPoint.getPointIndex())
                 .min(Comparator.comparing(CheckPoint::getPointIndex));
+    }
+
+    private double calculateDuration(Long curPathIdx, NavigationPath navigationPath, Long oldPathIdx) {
+        PathPoint prevPathPoint = navigationPath.getPathPoints().get(oldPathIdx.intValue());
+        PathPoint curPathPoint = navigationPath.getPathPoints().get(curPathIdx.intValue());
+        List<TableQueryResultDto> queryResultDtos = osrmTableService.getTableOfDistancesAndDurations(
+                coordinateToString(prevPathPoint.getCoordinate()),
+                List.of(coordinateToString(curPathPoint.getCoordinate())));
+        TableQueryResultDto tableQueryResultDto = queryResultDtos.get(0);
+        return tableQueryResultDto.getDuration();
     }
 
     private boolean filterPathInCheckPoint(CheckPoint checkPoint, PathPoint pathPoint) {

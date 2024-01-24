@@ -39,9 +39,6 @@ public class Vehicle extends BaseTimeEntity {
     @Enumerated
     private VehicleType vehicleType;
 
-//    @OneToOne(mappedBy = "vehicle", fetch = FetchType.LAZY)
-//    private VehicleStatus vehicleStatus;
-
     @Builder
     public Vehicle(Member member, String countryCode, String licenceNumber, VehicleType vehicleType) {
         this.member = member;

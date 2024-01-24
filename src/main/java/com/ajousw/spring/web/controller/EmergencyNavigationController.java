@@ -1,7 +1,7 @@
 package com.ajousw.spring.web.controller;
 
 import com.ajousw.spring.domain.member.UserPrinciple;
-import com.ajousw.spring.domain.navigation.EmergencyService;
+import com.ajousw.spring.domain.navigation.EmergencyNavigationService;
 import com.ajousw.spring.domain.navigation.dto.CheckPointDto;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.route.NaverNavigationService;
@@ -27,12 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-public class EmergencyController {
-    private final EmergencyService emergencyService;
+public class EmergencyNavigationController {
+    private final EmergencyNavigationService emergencyNavigationService;
     private final OsrmNavigationService osrmNavigationService;
     private final NaverNavigationService naverNavigationService;
 
-    // TODO: 이미 경로가 존재하는 경우 기존 경로 삭제
     @PostMapping("/api/emergency/navi/route")
     public ApiResponseJson getOsrmRoute(@Valid @RequestBody NavigationQueryDto navigationQueryDto,
                                         BindingResult bindingResult,
@@ -57,7 +56,7 @@ public class EmergencyController {
     public ApiResponseJson getSavedNavigationPath(@Param(value = "naviPathId") Long naviPathId,
                                                   @AuthenticationPrincipal UserPrinciple userPrinciple) {
         NavigationPathDto navigationPathDto =
-                emergencyService.getNavigationPathById(userPrinciple.getEmail(), naviPathId);
+                emergencyNavigationService.getNavigationPathById(userPrinciple.getEmail(), naviPathId);
 
         return new ApiResponseJson(HttpStatus.OK, navigationPathDto);
     }
@@ -68,7 +67,8 @@ public class EmergencyController {
                                                  @AuthenticationPrincipal UserPrinciple userPrinciple) {
         checkBindingResult(bindingResult);
 
-        Optional<CheckPointDto> checkPointDto = emergencyService.updateCurrentPathPoint(userPrinciple.getEmail(),
+        Optional<CheckPointDto> checkPointDto = emergencyNavigationService.updateCurrentPathPoint(
+                userPrinciple.getEmail(),
                 updateDto.getNaviPathId(), updateDto.getCurrentPoint());
 
         return new ApiResponseJson(HttpStatus.OK,
@@ -78,7 +78,7 @@ public class EmergencyController {
     @PostMapping("/api/emergency/navi/path/remove")
     public ApiResponseJson removeNavigationPath(@Param(value = "naviPathId") Long naviPathId,
                                                 @AuthenticationPrincipal UserPrinciple userPrinciple) {
-        emergencyService.removeNavigationPath(userPrinciple.getEmail(), naviPathId);
+        emergencyNavigationService.removeNavigationPath(userPrinciple.getEmail(), naviPathId);
 
         return new ApiResponseJson(HttpStatus.OK, "OK");
     }

@@ -7,9 +7,10 @@ import com.ajousw.spring.domain.navigation.api.info.route.NaverNavigationApiResp
 import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
 import com.ajousw.spring.domain.navigation.api.info.route.OsrmNavigationApiResponse;
 import com.ajousw.spring.domain.navigation.api.info.table.TableApiResponse;
-import com.ajousw.spring.domain.navigation.api.provider.NaverNavigationApi;
 import com.ajousw.spring.domain.navigation.api.provider.NavigationApi;
-import com.ajousw.spring.domain.navigation.api.provider.OsrmNavigationApi;
+import com.ajousw.spring.domain.navigation.api.provider.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.impl.NaverNavigationApi;
+import com.ajousw.spring.domain.navigation.api.provider.impl.OsrmNavigationApi;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

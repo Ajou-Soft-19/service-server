@@ -1,25 +1,25 @@
-package com.ajousw.spring.domain.navigation.route;
+package com.ajousw.spring.domain.navigation;
 
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
-import com.ajousw.spring.domain.navigation.api.NavigationPathProvider;
-import com.ajousw.spring.domain.navigation.api.Provider;
 import com.ajousw.spring.domain.navigation.api.info.route.Coordinate;
 import com.ajousw.spring.domain.navigation.api.info.route.Guide;
 import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
+import com.ajousw.spring.domain.navigation.api.provider.NavigationPathProvider;
+import com.ajousw.spring.domain.navigation.api.provider.Provider;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.dto.PathGuideDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
-import com.ajousw.spring.domain.navigation.entity.BatchInsertJdbcRepository;
 import com.ajousw.spring.domain.navigation.entity.MapLocation;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
-import com.ajousw.spring.domain.navigation.entity.NavigationPathRepository;
 import com.ajousw.spring.domain.navigation.entity.PathGuide;
-import com.ajousw.spring.domain.navigation.entity.PathGuideRepository;
 import com.ajousw.spring.domain.navigation.entity.PathPoint;
-import com.ajousw.spring.domain.navigation.entity.PathPointRepository;
+import com.ajousw.spring.domain.navigation.entity.repository.BatchInsertJdbcRepository;
+import com.ajousw.spring.domain.navigation.entity.repository.NavigationPathRepository;
+import com.ajousw.spring.domain.navigation.entity.repository.PathGuideRepository;
+import com.ajousw.spring.domain.navigation.entity.repository.PathPointRepository;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
-import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
+import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -45,13 +45,12 @@ public class NavigationService {
     private final VehicleRepository vehicleRepository;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
-    // TODO: API 라우트 별 정리
     public NavigationPathDto createNavigationPath(String email, Long vehicleId, Provider provider,
                                                   Map<String, String> params,
                                                   String queryType, boolean saveResult) {
         Member member = findMemberByEmail(email);
         Vehicle vehicle = findVehicleById(vehicleId);
-        deleteOldNavigationPath(vehicle);
+//        deleteOldNavigationPath(vehicle);
         NavigationApiResponse navigationQueryResult = pathProvider.getNavigationQueryResult(provider, params);
 
         NavigationPath naviPath = createNaviPath(member, vehicle, navigationQueryResult, provider, queryType,
@@ -70,6 +69,7 @@ public class NavigationService {
         return createNavigationPathDto(naviPath, pathPoints, pathGuides);
     }
 
+    // 삭제 예정
     private void deleteOldNavigationPath(Vehicle vehicle) {
         Optional<NavigationPath> oldNaviPathOptional = navigationPathRepository.
                 findNavigationPathByVehicle(vehicle);
@@ -85,7 +85,6 @@ public class NavigationService {
         navigationPathRepository.flush();
     }
 
-    // TODO: 일반 차량은 guide 삭제?
     @Transactional(readOnly = true)
     public NavigationPathDto getNavigationPathById(String email, Long naviPathId) {
         Member member = findMemberByEmail(email);

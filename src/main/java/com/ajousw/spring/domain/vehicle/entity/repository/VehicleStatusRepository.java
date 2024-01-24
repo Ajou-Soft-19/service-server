@@ -1,5 +1,6 @@
-package com.ajousw.spring.domain.vehicle.entity;
+package com.ajousw.spring.domain.vehicle.entity.repository;
 
+import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
