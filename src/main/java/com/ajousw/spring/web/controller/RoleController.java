@@ -5,12 +5,15 @@ import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.MemberService;
 import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.member.enums.Role;
+import com.ajousw.spring.web.controller.dto.auth.RequestEmergencyRoleDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -19,12 +22,26 @@ import org.springframework.web.bind.annotation.*;
 public class RoleController {
     private final MemberService memberService;
     private final AuthRequestService authRequestService;
+    /* test용 admin 권한 등록 api */
+    @PostMapping("/admin")
+    public ApiResponseJson requestAdminRole(@AuthenticationPrincipal UserPrinciple user) {
+        Member member = memberService.findByEmail(user.getEmail());
+        memberService.addRole(member.getId(), Role.ROLE_ADMIN);
+        return new ApiResponseJson(HttpStatus.OK, member.getRoles());
+    }
 
+    /* emergency 권한 요청한 유저 리스트 */
+    @GetMapping("/request")
+    public ApiResponseJson getRequestEmergencyRoleList(@AuthenticationPrincipal UserPrinciple user) {
+        /* 요청자 admin 권한 있는지 확인 */
+        Member member = memberService.findByEmail(user.getEmail());
+        List<RequestEmergencyRoleDto> result = authRequestService.getRequestEmergencyRoleList(member);
+        return new ApiResponseJson(HttpStatus.OK, result);
+    }
 
     /* emergency 권한 요청 */
     @PostMapping("")
     public ApiResponseJson addEmergencyRole(@AuthenticationPrincipal UserPrinciple user) {
-        System.out.println("post");
         Member member = memberService.findByEmail(user.getEmail());
         authRequestService.addRole(member);
         return new ApiResponseJson(HttpStatus.OK, "success");

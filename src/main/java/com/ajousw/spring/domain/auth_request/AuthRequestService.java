@@ -3,10 +3,14 @@ package com.ajousw.spring.domain.auth_request;
 import com.ajousw.spring.domain.auth_request.repository.AuthRequestRepository;
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.enums.Role;
+import com.ajousw.spring.web.controller.dto.auth.RequestEmergencyRoleDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -14,6 +18,25 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthRequestService {
     private final AuthRequestRepository authRequestRepository;
+
+    public List<RequestEmergencyRoleDto> getRequestEmergencyRoleList(Member member) {
+        if (member.hasRole(Role.ROLE_ADMIN)) {
+            // admin 권한 있음
+            List<RequestEmergencyRoleDto> result = new ArrayList<RequestEmergencyRoleDto>();
+            authRequestRepository.findAll().stream()
+                    .forEach(v -> {
+                        result.add(new RequestEmergencyRoleDto(
+                                v.getUserId(),
+                                v.getCreatedDate()
+                        ));
+                    });
+            return result;
+        } else {
+            // admin 권한 없음
+            log.info("ADMIN권한이 없는 사용자가 ADMIN API 요청함");
+            throw new IllegalArgumentException("ADMIN 권한이 없습니다.");
+        }
+    }
 
     public void addRole(Member member) {
         // case1. 권한이 이미 있음.
