@@ -50,6 +50,8 @@ public class NavigationService {
                                                   String queryType, boolean saveResult) {
         Member member = findMemberByEmail(email);
         Vehicle vehicle = findVehicleById(vehicleId);
+        checkVehicleOwner(member, vehicle);
+        
 //        deleteOldNavigationPath(vehicle);
         NavigationApiResponse navigationQueryResult = pathProvider.getNavigationQueryResult(provider, params);
 
@@ -113,6 +115,11 @@ public class NavigationService {
         navigationPathRepository.flush();
     }
 
+    private void checkVehicleOwner(Member member, Vehicle vehicle) {
+        if (!vehicle.getMember().getId().equals(member.getId())) {
+            throw new IllegalArgumentException("Not Owner of vehicle");
+        }
+    }
 
     private void checkPathOwner(Member member, NavigationPath navigationPath) {
         if (!navigationPath.getMember().getId().equals(member.getId())) {
