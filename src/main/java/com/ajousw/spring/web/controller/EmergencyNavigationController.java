@@ -14,13 +14,13 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -53,7 +53,7 @@ public class EmergencyNavigationController {
     }
 
     @GetMapping("/api/emergency/navi/path")
-    public ApiResponseJson getSavedNavigationPath(@Param(value = "naviPathId") Long naviPathId,
+    public ApiResponseJson getSavedNavigationPath(@RequestParam(value = "naviPathId") Long naviPathId,
                                                   @AuthenticationPrincipal UserPrinciple userPrinciple) {
         NavigationPathDto navigationPathDto =
                 emergencyNavigationService.getNavigationPathById(userPrinciple.getEmail(), naviPathId);
@@ -76,7 +76,7 @@ public class EmergencyNavigationController {
     }
 
     @PostMapping("/api/emergency/navi/path/remove")
-    public ApiResponseJson removeNavigationPath(@Param(value = "naviPathId") Long naviPathId,
+    public ApiResponseJson removeNavigationPath(@RequestParam(value = "naviPathId") Long naviPathId,
                                                 @AuthenticationPrincipal UserPrinciple userPrinciple) {
         emergencyNavigationService.removeNavigationPath(userPrinciple.getEmail(), naviPathId);
 
