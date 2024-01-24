@@ -1,7 +1,6 @@
 package com.ajousw.spring.domain.warn.entity;
 
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
-import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.warn.entity.WarnRecord.WarnRecordId;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
@@ -31,16 +30,11 @@ public class WarnRecord extends BaseTimeEntity implements Persistable<WarnRecord
     @JoinColumn(name = "emergency_event_id")
     private EmergencyEvent emergencyEvent;
 
-    @MapsId("vehicleId")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_Id")
-    private Vehicle vehicle;
 
-    public WarnRecord(EmergencyEvent emergencyEvent, Long checkPointIndex, Vehicle vehicle) {
+    public WarnRecord(EmergencyEvent emergencyEvent, Long checkPointIndex, Long vehicleId) {
         this.warnRecordId = new WarnRecordId(emergencyEvent.getEmergencyEventId(), checkPointIndex,
-                vehicle.getVehicleId());
+                vehicleId);
         this.emergencyEvent = emergencyEvent;
-        this.vehicle = vehicle;
     }
 
     @Getter

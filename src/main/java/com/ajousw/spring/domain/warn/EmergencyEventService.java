@@ -61,8 +61,8 @@ public class EmergencyEventService {
     }
 
     // 내부 로깅용
-    public void addWarnRecord(EmergencyEvent emergencyEvent, Long checkPointIndex, List<Vehicle> targetList) {
-        List<WarnRecord> newRecord = targetList.stream()
+    public void addWarnRecord(EmergencyEvent emergencyEvent, Long checkPointIndex, List<Long> vehicleIds) {
+        List<WarnRecord> newRecord = vehicleIds.stream()
                 .map(t -> new WarnRecord(emergencyEvent, checkPointIndex, t))
                 .toList();
 

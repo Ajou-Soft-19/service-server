@@ -43,12 +43,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class EmergencyNavigationService {
     private final NavigationPathProvider pathProvider;
-    private final NavigationPathRepository navigationPathRepository;
-    private final PathPointRepository pathPointRepository;
-    private final BatchInsertJdbcRepository batchInsertJdbcRepository;
-    private final CheckPointRepository checkPointRepository;
-    private final MemberJpaRepository memberRepository;
     private final VehicleRepository vehicleRepository;
+    private final MemberJpaRepository memberRepository;
+    private final PathPointRepository pathPointRepository;
+    private final CheckPointRepository checkPointRepository;
+    private final NavigationPathRepository navigationPathRepository;
+    private final BatchInsertJdbcRepository batchInsertJdbcRepository;
     private final AlertService alertService;
     private final OsrmTableService osrmTableService;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -126,6 +126,8 @@ public class EmergencyNavigationService {
         Long oldPathIdx = navigationPath.getCurrentPathPoint();
         List<CheckPoint> checkPoints = navigationPath.getCheckPoints();
         navigationPath.updateCurrentPathPoint(curPathIdx);
+        log.info("updated pathPoint for vehicleId {} naviPathId {} pathIndex {}",
+                navigationPath.getVehicle().getVehicleId(), navigationPath.getNaviPathId(), curPathIdx);
 
         return alertNextCheckPointIfPassedCheckPoint(curPathIdx, navigationPath, oldPathIdx, checkPoints);
     }
