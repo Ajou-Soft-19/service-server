@@ -6,7 +6,6 @@ import com.ajousw.spring.domain.navigation.dto.PathPointDto;
 import com.ajousw.spring.domain.navigation.entity.CheckPoint;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.vehicle.VehicleType;
-import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
 import com.ajousw.spring.domain.warn.entity.EmergencyEvent;
@@ -63,16 +62,13 @@ public class AlertService {
         List<VehicleStatus> targetVehicleStatus = vehicleStatusRepository.findAll();
         Set<String> targetSession = targetVehicleStatus.stream().map(VehicleStatus::getVehicleStatusId).collect(
                 Collectors.toSet());
-        List<Long> targetVehicleIds = targetVehicleStatus.stream().map(VehicleStatus::getVehicle)
-                .map(Vehicle::getVehicleId)
-                .toList();
 
         AlertDto alertDto = new AlertDto(licenceNumber, vehicleType,
                 emergencyPath.getCurrentPathPoint(), filteredPathPoints);
 
         redisMessagePublisher.publishAlertMessageToSocket(new BroadcastDto(targetSession, alertDto));
-        emergencyEventService.addWarnRecord(emergencyEvent, nextCheckPoint.getPointIndex(), targetVehicleIds);
-        log.info("<{}> Alert Broadcast to {} vehicles", uuid, targetVehicleIds.size());
+        emergencyEventService.addWarnRecord(uuid, emergencyEvent, nextCheckPoint.getPointIndex(), targetVehicleStatus);
+        log.info("<{}> Alert Broadcast to {} vehicles", uuid, targetVehicleStatus.size());
     }
 
 }

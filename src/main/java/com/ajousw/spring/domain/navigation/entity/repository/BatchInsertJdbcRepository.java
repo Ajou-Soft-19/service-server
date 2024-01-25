@@ -2,8 +2,10 @@ package com.ajousw.spring.domain.navigation.entity.repository;
 
 import com.ajousw.spring.domain.navigation.entity.CheckPoint;
 import com.ajousw.spring.domain.navigation.entity.PathPoint;
+import com.ajousw.spring.domain.warn.entity.WarnRecord;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -68,6 +70,39 @@ public class BatchInsertJdbcRepository {
             @Override
             public int getBatchSize() {
                 return checkPoints.size();
+            }
+        });
+    }
+
+    @Transactional
+    public void saveAllWarnRecordsInBatch(List<WarnRecord> warnRecords) {
+        String sql =
+                "INSERT INTO warn_record (emergency_event_id, check_point_index, vehicle_id, coordinate, meter_per_sec, direction, using_navi)"
+                        + " VALUES (?, ?, ?, ST_Point(?, ?), ?, ?, ?)";
+
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                WarnRecord warnRecord = warnRecords.get(i);
+
+                ps.setLong(1, warnRecord.getWarnRecordId().getEmergencyEventId());
+                ps.setLong(2, warnRecord.getWarnRecordId().getCheckPointIndex());
+                ps.setLong(3, warnRecord.getWarnRecordId().getVehicleId());
+                if (warnRecord.getCoordinate() != null) {
+                    ps.setDouble(4, warnRecord.getCoordinate().getX());
+                    ps.setDouble(5, warnRecord.getCoordinate().getY());
+                } else {
+                    ps.setNull(4, Types.DOUBLE);
+                    ps.setNull(5, Types.DOUBLE);
+                }
+                ps.setDouble(6, warnRecord.getMeterPerSec());
+                ps.setDouble(7, warnRecord.getDirection());
+                ps.setBoolean(8, warnRecord.getUsingNavi());
+            }
+
+            @Override
+            public int getBatchSize() {
+                return warnRecords.size();
             }
         });
     }

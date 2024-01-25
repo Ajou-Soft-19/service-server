@@ -50,11 +50,12 @@ public class EmergencyEventController {
 
     @GetMapping("/api/emergency/event")
     public ApiResponseJson getRegisteredEvent(@RequestParam(value = "vehicleId") Long vehicleId,
-                                              @RequestParam(value = "onlyActive") Boolean onlyActive,
+                                              @RequestParam(value = "onlyActive", defaultValue = "true") Boolean onlyActive,
+                                              @RequestParam(value = "includeTarget", defaultValue = "false") Boolean includeTarget,
                                               @AuthenticationPrincipal UserPrinciple user) {
 
         List<EmergencyEventDto> emergencyEvents = emergencyEventService.getEmergencyEvents(user.getEmail(), vehicleId,
-                onlyActive);
+                onlyActive, includeTarget);
 
         return new ApiResponseJson(HttpStatus.OK, emergencyEvents);
     }

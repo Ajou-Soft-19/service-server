@@ -23,4 +23,12 @@ public interface EmergencyEventRepository extends JpaRepository<EmergencyEvent, 
     @Query("select e from EmergencyEvent e where e.member=:member and e.vehicle=:vehicle and e.isActive=true order by e.createdDate desc")
     List<EmergencyEvent> findActiveEmergencyEventsOrderByDate(@Param("member") Member member,
                                                               @Param("vehicle") Vehicle vehicle);
+
+    @Query("select e from EmergencyEvent e join fetch e.warnRecords where e.member=:member and e.vehicle=:vehicle order by e.createdDate desc")
+    List<EmergencyEvent> findAllEmergencyEventsOrderByDateFetch(@Param("member") Member member,
+                                                                @Param("vehicle") Vehicle vehicle);
+
+    @Query("select e from EmergencyEvent e join fetch e.warnRecords where e.member=:member and e.vehicle=:vehicle and e.isActive=true order by e.createdDate desc")
+    List<EmergencyEvent> findActiveEmergencyEventsOrderByDateFetch(@Param("member") Member member,
+                                                                   @Param("vehicle") Vehicle vehicle);
 }
