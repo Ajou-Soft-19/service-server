@@ -1,8 +1,9 @@
 package com.ajousw.spring.domain.warn.entity;
 
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
-import com.ajousw.spring.domain.vehicle.entity.Vehicle;
+import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.warn.entity.WarnRecord.WarnRecordId;
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
@@ -16,6 +17,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Persistable;
 
 @Entity
@@ -31,16 +33,23 @@ public class WarnRecord extends BaseTimeEntity implements Persistable<WarnRecord
     @JoinColumn(name = "emergency_event_id")
     private EmergencyEvent emergencyEvent;
 
-    @MapsId("vehicleId")
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "vehicle_Id")
-    private Vehicle vehicle;
+    @Column(columnDefinition = "geometry(Point, 4326)")
+    private Point coordinate;
 
-    public WarnRecord(EmergencyEvent emergencyEvent, Long checkPointIndex, Vehicle vehicle) {
+    private Double meterPerSec;
+
+    private Double direction;
+
+    private Boolean usingNavi;
+
+    public WarnRecord(EmergencyEvent emergencyEvent, Long checkPointIndex, VehicleStatus vehicleStatus) {
         this.warnRecordId = new WarnRecordId(emergencyEvent.getEmergencyEventId(), checkPointIndex,
-                vehicle.getVehicleId());
+                vehicleStatus.getVehicle().getVehicleId());
         this.emergencyEvent = emergencyEvent;
-        this.vehicle = vehicle;
+        this.coordinate = vehicleStatus.getCoordinate();
+        this.meterPerSec = vehicleStatus.getMeterPerSec();
+        this.direction = vehicleStatus.getDirection();
+        this.usingNavi = vehicleStatus.isUsingNavi();
     }
 
     @Getter

@@ -1,10 +1,13 @@
 package com.ajousw.spring.domain.warn;
 
 import com.ajousw.spring.domain.member.Member;
+import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
+import com.ajousw.spring.domain.navigation.entity.repository.BatchInsertJdbcRepository;
 import com.ajousw.spring.domain.navigation.entity.repository.NavigationPathRepository;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
+import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
 import com.ajousw.spring.domain.warn.entity.EmergencyEvent;
 import com.ajousw.spring.domain.warn.entity.WarnRecord;
@@ -14,7 +17,6 @@ import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.domain.warn.entity.repository.WarnRecordRepository;
 import com.ajousw.spring.web.controller.dto.emergency.EmergencyEventCreateDto;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +30,12 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class EmergencyEventService {
 
+    private final BatchInsertJdbcRepository batchInsertJdbcRepository;
     private final EmergencyEventRepository emergencyEventRepository;
-    private final WarnRecordRepository warnRecordRepository;
     private final NavigationPathRepository navigationPathRepository;
-    private final VehicleRepository vehicleRepository;
+    private final WarnRecordRepository warnRecordRepository;
     private final MemberJpaRepository memberRepository;
+    private final VehicleRepository vehicleRepository;
 
     public EmergencyEventDto createEmergencyEvent(String email, EmergencyEventCreateDto eventCreateDto) {
         Member member = findMemberByEmail(email);
@@ -61,25 +64,36 @@ public class EmergencyEventService {
     }
 
     // 내부 로깅용
-    public void addWarnRecord(EmergencyEvent emergencyEvent, Long checkPointIndex, List<Vehicle> targetList) {
-        List<WarnRecord> newRecord = targetList.stream()
-                .map(t -> new WarnRecord(emergencyEvent, checkPointIndex, t))
+    public void addWarnRecord(String uuid, EmergencyEvent emergencyEvent, Long checkPointIndex,
+                              List<VehicleStatus> vehicleStatuses) {
+        List<WarnRecord> newRecords = vehicleStatuses.stream()
+                .map(vs -> new WarnRecord(emergencyEvent, checkPointIndex, vs))
                 .toList();
 
-        warnRecordRepository.saveAll(newRecord);
+        batchInsertJdbcRepository.saveAllWarnRecordsInBatch(newRecords);
+        log.info("<{}> batchInsert Success", uuid);
     }
 
     @Transactional(readOnly = true)
-    public List<EmergencyEventDto> getEmergencyEvents(String email, Long vehicleId, boolean onlyActive) {
+    public List<EmergencyEventDto> getEmergencyEvents(String email, Long vehicleId, boolean onlyActive,
+                                                      boolean includeTarget) {
         Member member = findMemberByEmail(email);
         Vehicle vehicle = findVehicleById(vehicleId);
-        checkVehicleOwner(member, vehicle);
+        checkAdmin(member);
 
-        List<EmergencyEvent> emergencyEvents = onlyActive
-                ? emergencyEventRepository.findActiveEmergencyEventsOrderByDate(member, vehicle)
-                : emergencyEventRepository.findAllEmergencyEventsOrderByDate(member, vehicle);
+        List<EmergencyEvent> emergencyEvents;
 
-        return toEmergencyEventDtoList(emergencyEvents, false);
+        if (includeTarget) {
+            emergencyEvents = onlyActive
+                    ? emergencyEventRepository.findActiveEmergencyEventsOrderByDateFetch(member, vehicle)
+                    : emergencyEventRepository.findAllEmergencyEventsOrderByDateFetch(member, vehicle);
+        } else {
+            emergencyEvents = onlyActive
+                    ? emergencyEventRepository.findActiveEmergencyEventsOrderByDate(member, vehicle)
+                    : emergencyEventRepository.findAllEmergencyEventsOrderByDate(member, vehicle);
+        }
+
+        return toEmergencyEventDtoList(emergencyEvents, includeTarget);
     }
 
     private List<EmergencyEventDto> toEmergencyEventDtoList(List<EmergencyEvent> emergencyEvents,
@@ -105,14 +119,23 @@ public class EmergencyEventService {
     }
 
     private List<WarnRecordDto> createWarnRecordDto(List<WarnRecord> warnRecords) {
-        Map<Long, List<WarnRecord>> warnRecordGroupByEventId = warnRecords.stream()
-                .collect(Collectors.groupingBy(wr -> wr.getWarnRecordId().getCheckPointIndex()));
+        return warnRecords.stream()
+                .map(warnRecord -> new WarnRecordDto(
+                        warnRecord.getWarnRecordId().getCheckPointIndex(),
+                        warnRecord.getWarnRecordId().getVehicleId(),
+                        warnRecord.getCoordinate() != null ? warnRecord.getCoordinate().getX() : null,
+                        warnRecord.getCoordinate() != null ? warnRecord.getCoordinate().getY() : null,
+                        warnRecord.getMeterPerSec(),
+                        warnRecord.getDirection(),
+                        warnRecord.getUsingNavi()
+                ))
+                .collect(Collectors.toList());
+    }
 
-        return warnRecordGroupByEventId.entrySet().stream()
-                .map(entry -> new WarnRecordDto(entry.getKey(), entry.getValue().stream()
-                        .map(wr -> wr.getWarnRecordId().getVehicleId())
-                        .collect(Collectors.toList())))
-                .toList();
+    private void checkAdmin(Member member) {
+        if (!member.hasRole(Role.ROLE_ADMIN)) {
+            throw new IllegalArgumentException("Account has no Query Authority");
+        }
     }
 
     private void checkEventOwner(Member member, EmergencyEvent event) {
