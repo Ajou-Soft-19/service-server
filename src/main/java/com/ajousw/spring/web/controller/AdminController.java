@@ -4,7 +4,7 @@ import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.navigation.NavigationPathService;
 import com.ajousw.spring.domain.vehicle.VehicleStatusService;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
-import com.ajousw.spring.domain.vehicle.entity.VehicleRepository;
+import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleStatusListDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusCoordinateRequestDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusDto;
