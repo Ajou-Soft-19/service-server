@@ -1,6 +1,7 @@
 package com.ajousw.spring.domain.vehicle.entity;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -23,4 +24,5 @@ public interface VehicleStatusRepository extends JpaRepository<VehicleStatus, UU
                                             @Param("radius") double radius);
 
     List<VehicleStatus> findVehicleStatusByIsEmergencyVehicle(boolean isEmergencyVehicle);
+    Optional<VehicleStatus> findVehicleStatusByVehicleStatusId(String vehicleStatusId);
 }
