@@ -1,7 +1,7 @@
 package com.ajousw.spring.web.controller;
 
 import com.ajousw.spring.domain.navigation.dto.TableQueryResultDto;
-import com.ajousw.spring.domain.navigation.warn.TableService;
+import com.ajousw.spring.domain.navigation.route.OsrmTableService;
 import com.ajousw.spring.web.controller.dto.navigation.TableQueryDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
@@ -18,11 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TableController {
 
-    private final TableService tableService;
+    private final OsrmTableService osrmTableService;
 
     @PostMapping("/api/navi/table")
     public ApiResponseJson calculateDistanceAndDuration(@Valid @RequestBody TableQueryDto tableQueryDto) {
-        List<TableQueryResultDto> tableOfDistancesAndDurations = tableService.getTableOfDistancesAndDurations(
+        List<TableQueryResultDto> tableOfDistancesAndDurations = osrmTableService.getTableOfDistancesAndDurations(
                 tableQueryDto.getSource(), tableQueryDto.getDestinations());
 
         return new ApiResponseJson(HttpStatus.OK, tableOfDistancesAndDurations);

@@ -2,7 +2,7 @@ package com.ajousw.spring.domain.navigation.entity;
 
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
-import com.ajousw.spring.domain.navigation.api.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.Provider;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
@@ -17,7 +17,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.AccessLevel;
@@ -40,7 +39,7 @@ public class NavigationPath extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vehicle_id")
     private Vehicle vehicle;
 

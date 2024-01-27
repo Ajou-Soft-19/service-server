@@ -1,7 +1,7 @@
 package com.ajousw.spring.web.controller.advice;
 
-import com.ajousw.spring.domain.exception.ApiNotSupportedException;
-import com.ajousw.spring.domain.exception.BadApiResponseException;
+import com.ajousw.spring.domain.navigation.exception.ApiNotSupportedException;
+import com.ajousw.spring.domain.navigation.exception.BadApiResponseException;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import com.ajousw.spring.web.controller.json.ResponseStatusCode;
 import java.util.Map;
@@ -16,6 +16,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 
@@ -57,7 +58,7 @@ public class ExceptionAdvice {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({MethodArgumentNotValidException.class, TypeMismatchException.class,
-            HttpMessageNotReadableException.class})
+            HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
     public ApiResponseJson handleBadRequestBody() {
         return new ApiResponseJson(HttpStatus.BAD_REQUEST, ResponseStatusCode.WRONG_PARAMETER,
                 Map.of(ERROR_MSG_KEY, ControllerMessage.WRONG_REQUEST_ERROR_MSG));
