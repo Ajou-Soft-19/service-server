@@ -5,9 +5,12 @@ import com.ajousw.spring.domain.navigation.NavigationPathService;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.vehicle.VehicleStatusService;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleStatusListDto;
+import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusEmergencyDto;
+import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,5 +42,11 @@ public class AdminController {
         return navigationPathService.findNavigationPathByVehicle(vehicleId);
     }
 
+    /* 주행중인 모든 응급차량의 정보 조회 */
+    @PostMapping("/monit/vehicle-status/emergency/all")
+    public ApiResponseJson getEmergencyVehicleOnAction() {
+        List<VehicleStatusEmergencyDto> result = vehicleStatusService.getEmergencyVehicleAll();
+        return new ApiResponseJson(HttpStatus.OK, result);
+    }
 
 }

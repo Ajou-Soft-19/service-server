@@ -21,4 +21,6 @@ public interface VehicleStatusRepository extends JpaRepository<VehicleStatus, UU
             + "ST_DWithin(vs.coordinate, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :radius) = true")
     List<VehicleStatus> findAllWithinRadius(@Param("lon") double longitude, @Param("lat") double latitude,
                                             @Param("radius") double radius);
+
+    List<VehicleStatus> findVehicleStatusByIsEmergencyVehicle(boolean isEmergencyVehicle);
 }
