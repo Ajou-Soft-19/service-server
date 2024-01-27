@@ -26,12 +26,25 @@ import java.util.List;
 public class VehicleStatusService {
     private final VehicleStatusRepository vehicleStatusRepository;
     private final NavigationPathRepository navigationPathRepository;
+
     /*주행중인 특정 응급 차량 조회 */
     public VehicleStatusNavigationPathDto getVehicleStatusEmergencyOne(String vehicleStatusId) {
         VehicleStatus vehicleStatus = vehicleStatusRepository.findVehicleStatusByVehicleStatusId(vehicleStatusId).get();
         NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(vehicleStatus.getVehicle()).get();
 
         return new VehicleStatusNavigationPathDto(vehicleStatus,navigationPath);
+    }
+
+    /* 응급상태 아닌 주행중인 모든 차량 정보 조회 */
+    public List<VehicleStatusNavigationPathDto> getVehicleStatusAllExceptEmergency() {
+        List<VehicleStatusNavigationPathDto> result = new ArrayList<VehicleStatusNavigationPathDto>();
+        vehicleStatusRepository.findVehicleStatusByIsEmergencyVehicle(false)
+                .stream()
+                .forEach( v -> {
+                    NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(v.getVehicle()).get();
+                    result.add(new VehicleStatusNavigationPathDto(v, navigationPath));
+                });
+        return result;
     }
 
     /* 모든 주행중인 응급차량 조회 */
