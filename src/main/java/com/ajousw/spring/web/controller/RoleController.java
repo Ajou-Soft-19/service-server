@@ -6,6 +6,7 @@ import com.ajousw.spring.domain.member.MemberService;
 import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.web.controller.dto.auth.RequestEmergencyRoleDto;
+import com.ajousw.spring.web.controller.dto.member.EmergencyMemberDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,16 @@ import java.util.List;
 public class RoleController {
     private final MemberService memberService;
     private final AuthRequestService authRequestService;
+
+    /* 응급 차량 권한 가지고 있는 유저 리스트 조회 */
+    @GetMapping("/emergency")
+    public ApiResponseJson getEergencyRoleList(@AuthenticationPrincipal UserPrinciple user) {
+        Member member = memberService.findByEmail(user.getEmail());
+        List<EmergencyMemberDto> result = memberService.findEmergencyMember(member);
+
+        return new ApiResponseJson(HttpStatus.OK, result);
+    }
+
     /* test용 admin 권한 등록 api */
     @PostMapping("/admin")
     public ApiResponseJson requestAdminRole(@AuthenticationPrincipal UserPrinciple user) {
