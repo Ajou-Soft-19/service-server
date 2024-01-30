@@ -22,7 +22,6 @@ public class VehicleService {
     private final MemberService memberService;
 
     /* 자동차 정보 수정 */
-    @Transactional
     public void updateVehicle(String email, Long vehicleId, VehicleCreateDto vehicleCreateDto) {
         Vehicle vehicle = findVehicleByVehicleId(vehicleId);
         if (vehicleCreateDto.getVehicleType() != null) {
@@ -41,7 +40,13 @@ public class VehicleService {
     /* 특정 자동차 삭제 */
     public void removeVehicle(String email, Long vehicleId) {
         Vehicle vehicle = findVehicleByVehicleId(vehicleId);
-        vehicleRepository.delete(vehicle);
+        Member member = memberService.findByEmail(email);
+        if (member.getVehicles().contains(vehicle)) {
+            vehicleRepository.delete(vehicle);
+        } else {
+            log.info("유저에게 등록되어 있지 않은 차량임.");
+            throw new IllegalArgumentException("차량 소유주가 아닙니다.");
+        }
     }
 
     /* 자동차 등록 */

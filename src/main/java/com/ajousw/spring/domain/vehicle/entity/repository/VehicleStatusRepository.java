@@ -1,5 +1,6 @@
 package com.ajousw.spring.domain.vehicle.entity.repository;
 
+import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import java.util.List;
 import java.util.Optional;
@@ -26,4 +27,5 @@ public interface VehicleStatusRepository extends JpaRepository<VehicleStatus, UU
 
     List<VehicleStatus> findVehicleStatusByIsEmergencyVehicle(boolean isEmergencyVehicle);
     Optional<VehicleStatus> findVehicleStatusByVehicleStatusId(String vehicleStatusId);
+    Optional<VehicleStatus> findVehicleStatusByVehicle(Vehicle vehicleId);
 }
