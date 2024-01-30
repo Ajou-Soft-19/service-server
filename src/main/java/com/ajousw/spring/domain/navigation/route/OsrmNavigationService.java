@@ -21,15 +21,14 @@ public class OsrmNavigationService {
     private final EmergencyNavigationService emergencyNavigationService;
 
     public NavigationPathDto getOsrmNavigationPath(String email, Long vehicleId, String source, String dest,
-                                                   String getSteps,
-                                                   boolean saveResult, boolean isEmergency) {
+                                                   String getSteps, boolean isEmergency) {
         Map<String, String> params = createDrivingParams(source, dest, Map.of("getSteps", getSteps));
 
         if (isEmergency) {
             return emergencyNavigationService.createNavigationPath(email, vehicleId, Provider.OSRM, params, "OSRM");
         }
 
-        return navigationService.createNavigationPath(email, vehicleId, Provider.OSRM, params, "OSRM", saveResult);
+        return navigationService.getNavigationPath(Provider.OSRM, params, "OSRM");
     }
 
     private Map<String, String> createDrivingParams(String source, String dest, Map<String, String> options) {

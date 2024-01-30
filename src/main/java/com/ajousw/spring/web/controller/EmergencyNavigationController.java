@@ -7,7 +7,7 @@ import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.route.NaverNavigationService;
 import com.ajousw.spring.domain.navigation.route.OsrmNavigationService;
 import com.ajousw.spring.web.controller.dto.navigation.CurrentPointUpdateDto;
-import com.ajousw.spring.web.controller.dto.navigation.NavigationQueryDto;
+import com.ajousw.spring.web.controller.dto.navigation.EmergencyNavigationQueryDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
 import java.util.Map;
@@ -33,7 +33,7 @@ public class EmergencyNavigationController {
     private final NaverNavigationService naverNavigationService;
 
     @PostMapping("/api/emergency/navi/route")
-    public ApiResponseJson getOsrmRoute(@Valid @RequestBody NavigationQueryDto navigationQueryDto,
+    public ApiResponseJson getOsrmRoute(@Valid @RequestBody EmergencyNavigationQueryDto navigationQueryDto,
                                         BindingResult bindingResult,
                                         @AuthenticationPrincipal UserPrinciple userPrinciple) {
         checkBindingResult(bindingResult);
@@ -42,10 +42,10 @@ public class EmergencyNavigationController {
         switch (navigationQueryDto.getProvider()) {
             case NAVER -> navigationPath = naverNavigationService.getNaverNavigationPath(userPrinciple.getEmail(),
                     navigationQueryDto.getVehicleId(), navigationQueryDto.getSource(), navigationQueryDto.getDest(),
-                    navigationQueryDto.getOption(), true, true);
+                    navigationQueryDto.getOption(), true);
             case OSRM -> navigationPath = osrmNavigationService.getOsrmNavigationPath(userPrinciple.getEmail(),
                     navigationQueryDto.getVehicleId(), navigationQueryDto.getSource(), navigationQueryDto.getDest(),
-                    navigationQueryDto.getOption(), true, true);
+                    navigationQueryDto.getOption(), true);
             default -> throw new IllegalArgumentException("PROVIDER NOT SUPPORTED");
         }
 

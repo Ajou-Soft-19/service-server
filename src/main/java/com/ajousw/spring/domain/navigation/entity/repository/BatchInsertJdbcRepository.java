@@ -5,6 +5,7 @@ import com.ajousw.spring.domain.navigation.entity.PathPoint;
 import com.ajousw.spring.domain.warn.entity.WarnRecord;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.List;
 import java.util.UUID;
@@ -77,8 +78,8 @@ public class BatchInsertJdbcRepository {
     @Transactional
     public void saveAllWarnRecordsInBatch(List<WarnRecord> warnRecords) {
         String sql =
-                "INSERT INTO warn_record (emergency_event_id, check_point_index, vehicle_id, coordinate, meter_per_sec, direction, using_navi)"
-                        + " VALUES (?, ?, ?, ST_Point(?, ?), ?, ?, ?)";
+                "INSERT INTO warn_record (emergency_event_id, check_point_index, session_id, coordinate, meter_per_sec, direction, using_navi, created_date)"
+                        + " VALUES (?, ?, ?, ST_Point(?, ?), ?, ?, ?, ?)";
 
         jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
@@ -87,7 +88,7 @@ public class BatchInsertJdbcRepository {
 
                 ps.setLong(1, warnRecord.getWarnRecordId().getEmergencyEventId());
                 ps.setLong(2, warnRecord.getWarnRecordId().getCheckPointIndex());
-                ps.setLong(3, warnRecord.getWarnRecordId().getVehicleId());
+                ps.setString(3, warnRecord.getWarnRecordId().getSessionId());
                 if (warnRecord.getCoordinate() != null) {
                     ps.setDouble(4, warnRecord.getCoordinate().getX());
                     ps.setDouble(5, warnRecord.getCoordinate().getY());
@@ -98,6 +99,7 @@ public class BatchInsertJdbcRepository {
                 ps.setDouble(6, warnRecord.getMeterPerSec());
                 ps.setDouble(7, warnRecord.getDirection());
                 ps.setBoolean(8, warnRecord.getUsingNavi());
+                ps.setTimestamp(9, Timestamp.valueOf(warnRecord.getCreatedDate()));
             }
 
             @Override
@@ -106,4 +108,6 @@ public class BatchInsertJdbcRepository {
             }
         });
     }
+
+
 }
