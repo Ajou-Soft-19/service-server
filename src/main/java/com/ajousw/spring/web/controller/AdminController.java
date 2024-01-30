@@ -51,29 +51,30 @@ public class AdminController {
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
-    /* 모든 현재 주행중인 응급인 차량 리스트 조회 */
-    @PostMapping("/emergency/all")
-    public List<VehicleStatusListDto> getVehicleStatusAll(@AuthenticationPrincipal UserPrinciple user) {
-        return vehicleStatusService.findVehicleStatusAll(user.getEmail());
+    /* 현재 주행중인 모든 응급인 차량 리스트 조회 */
+    @GetMapping("/emergency/all")
+    public ApiResponseJson getVehicleStatusAll(@AuthenticationPrincipal UserPrinciple user) {
+        List<VehicleStatusListDto> result = vehicleStatusService.findVehicleStatusAll(user.getEmail());
+        return new ApiResponseJson(HttpStatus.OK, result);
     }
 
     /* 주행중인 응급차량 조회 */
-    @PostMapping("/monit/vehicle-status/emergency/{vehicleId}")
-    public ApiResponseJson getNavigationPathByVehicleStatusId(@AuthenticationPrincipal UserPrinciple user,
-                                                        @Valid @PathVariable Long vehicleId) {
-        VehicleStatusNavigationPathDto result = vehicleStatusService.getVehicleStatusEmergencyOne(user.getEmail(), vehicleId);
+    @GetMapping("/monit/vehicle-status/emergency")
+    public ApiResponseJson getNavigationPathByVehicleStatusId(@Valid @RequestParam(value="vehicleStatusId") String vehicleStatusId,
+                                                              @AuthenticationPrincipal UserPrinciple user) {
+        VehicleStatusNavigationPathDto result = vehicleStatusService.getVehicleStatusEmergencyOne(user.getEmail(), vehicleStatusId);
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
     /* 모든 응급 차량의 경로 조회 */
-    @PostMapping("/monit/vehicle-status/emergency/all")
+    @GetMapping("/monit/vehicle-status/emergency/all")
     public ApiResponseJson getNavigationPathAll(@AuthenticationPrincipal UserPrinciple user) {
         List<VehicleStatusNavigationPathDto> result = vehicleStatusService.getVehicleStatusAllExceptEmergency(user.getEmail());
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
     /* 주행중인 모든 응급차량의 정보 조회 */
-    @GetMapping("/monit/vehicle-status/emergency/all")
+    @PostMapping("/monit/vehicle-status/emergency/all")
     public ApiResponseJson getEmergencyVehicleOnAction(@AuthenticationPrincipal UserPrinciple user) {
         List<VehicleStatusDto> result = vehicleStatusService.getEmergencyVehicleAll(user.getEmail());
         return new ApiResponseJson(HttpStatus.OK, result);
