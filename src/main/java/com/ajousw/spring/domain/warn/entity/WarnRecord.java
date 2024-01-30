@@ -1,6 +1,5 @@
 package com.ajousw.spring.domain.warn.entity;
 
-import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.warn.entity.WarnRecord.WarnRecordId;
 import jakarta.persistence.Column;
@@ -12,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -23,7 +23,7 @@ import org.springframework.data.domain.Persistable;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class WarnRecord extends BaseTimeEntity implements Persistable<WarnRecordId> {
+public class WarnRecord implements Persistable<WarnRecordId> {
 
     @EmbeddedId
     private WarnRecordId warnRecordId;
@@ -42,14 +42,17 @@ public class WarnRecord extends BaseTimeEntity implements Persistable<WarnRecord
 
     private Boolean usingNavi;
 
+    private LocalDateTime createdDate;
+
     public WarnRecord(EmergencyEvent emergencyEvent, Long checkPointIndex, VehicleStatus vehicleStatus) {
         this.warnRecordId = new WarnRecordId(emergencyEvent.getEmergencyEventId(), checkPointIndex,
-                vehicleStatus.getVehicle().getVehicleId());
+                vehicleStatus.getVehicleStatusId());
         this.emergencyEvent = emergencyEvent;
         this.coordinate = vehicleStatus.getCoordinate();
         this.meterPerSec = vehicleStatus.getMeterPerSec();
         this.direction = vehicleStatus.getDirection();
         this.usingNavi = vehicleStatus.isUsingNavi();
+        this.createdDate = LocalDateTime.now();
     }
 
     @Getter
@@ -62,7 +65,7 @@ public class WarnRecord extends BaseTimeEntity implements Persistable<WarnRecord
 
         private Long checkPointIndex;
 
-        private Long vehicleId;
+        private String sessionId;
 
         @Override
         public boolean equals(Object o) {
@@ -75,23 +78,25 @@ public class WarnRecord extends BaseTimeEntity implements Persistable<WarnRecord
             WarnRecordId that = (WarnRecordId) o;
             return Objects.equals(emergencyEventId, that.emergencyEventId)
                     && Objects.equals(checkPointIndex, that.checkPointIndex)
-                    && Objects.equals(vehicleId, that.vehicleId);
+                    && Objects.equals(sessionId, that.sessionId);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(emergencyEventId, checkPointIndex, vehicleId);
+            return Objects.hash(emergencyEventId, checkPointIndex, sessionId);
         }
     }
 
     @Override
     public WarnRecordId getId() {
         return new WarnRecordId(this.warnRecordId.getEmergencyEventId(), this.warnRecordId.getCheckPointIndex(),
-                this.warnRecordId.vehicleId);
+                this.warnRecordId.sessionId);
     }
 
+    // 그냥 True? 어차피 수정할일 없으니까
     @Override
     public boolean isNew() {
-        return this.getCreatedDate() == null;
+//        return this.getCreatedDate() == null;
+        return true;
     }
 }

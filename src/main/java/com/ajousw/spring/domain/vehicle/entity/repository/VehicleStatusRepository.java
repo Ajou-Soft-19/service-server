@@ -21,7 +21,7 @@ public interface VehicleStatusRepository extends JpaRepository<VehicleStatus, UU
      */
 
     @Query("select vs from VehicleStatus vs where "
-            + "ST_DWithin(vs.coordinate, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :radius) = true")
+            + "ST_DWithin(vs.coordinate, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :radius, false) = true")
     List<VehicleStatus> findAllWithinRadius(@Param("lon") double longitude, @Param("lat") double latitude,
                                             @Param("radius") double radius);
 

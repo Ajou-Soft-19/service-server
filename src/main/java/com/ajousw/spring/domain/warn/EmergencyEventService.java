@@ -14,9 +14,9 @@ import com.ajousw.spring.domain.warn.entity.WarnRecord;
 import com.ajousw.spring.domain.warn.entity.dto.EmergencyEventDto;
 import com.ajousw.spring.domain.warn.entity.dto.WarnRecordDto;
 import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
-import com.ajousw.spring.domain.warn.entity.repository.WarnRecordRepository;
 import com.ajousw.spring.web.controller.dto.emergency.EmergencyEventCreateDto;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,6 @@ public class EmergencyEventService {
     private final BatchInsertJdbcRepository batchInsertJdbcRepository;
     private final EmergencyEventRepository emergencyEventRepository;
     private final NavigationPathRepository navigationPathRepository;
-    private final WarnRecordRepository warnRecordRepository;
     private final MemberJpaRepository memberRepository;
     private final VehicleRepository vehicleRepository;
 
@@ -122,7 +121,7 @@ public class EmergencyEventService {
         return warnRecords.stream()
                 .map(warnRecord -> new WarnRecordDto(
                         warnRecord.getWarnRecordId().getCheckPointIndex(),
-                        warnRecord.getWarnRecordId().getVehicleId(),
+                        warnRecord.getWarnRecordId().getSessionId(),
                         warnRecord.getCoordinate() != null ? warnRecord.getCoordinate().getX() : null,
                         warnRecord.getCoordinate() != null ? warnRecord.getCoordinate().getY() : null,
                         warnRecord.getMeterPerSec(),
@@ -139,7 +138,7 @@ public class EmergencyEventService {
     }
 
     private void checkEventOwner(Member member, EmergencyEvent event) {
-        if (event.getMember().getId() != member.getId()) {
+        if (!Objects.equals(event.getMember().getId(), member.getId())) {
             throw new IllegalArgumentException("Not Owner of EmergencyEvent");
         }
     }

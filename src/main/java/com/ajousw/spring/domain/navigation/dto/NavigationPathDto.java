@@ -26,10 +26,11 @@ public class NavigationPathDto {
     private List<PathGuideDto> pathGuide;
     private List<CheckPointDto> checkPoint;
 
+    // 일반 차량용 DTO
     public NavigationPathDto(NavigationPath navigationPath, List<PathPointDto> pathPoints,
                              List<PathGuideDto> pathGuides) {
-        this.naviPathId = navigationPath.getNaviPathId();
-        this.vehicleId = navigationPath.getVehicle().getVehicleId();
+        this.naviPathId = null;
+        this.vehicleId = null;
         this.isEmergencyPath = false;
         this.provider = navigationPath.getProvider();
         this.sourceLocation = navigationPath.getSourceLocation();
@@ -43,6 +44,7 @@ public class NavigationPathDto {
         this.pathPoint = pathPoints;
     }
 
+    // 응급 차량용 DTO
     public NavigationPathDto(NavigationPath navigationPath, List<PathPointDto> pathPoints,
                              List<CheckPointDto> checkPoints, boolean isEmergencyPath) {
         this.naviPathId = navigationPath.getNaviPathId();

@@ -12,7 +12,7 @@ public class WarnRecordDto {
 
     private Long checkPointId;
 
-    private Long vehicleId;
+    private String sessionId;
 
     private Double longitude;
 
