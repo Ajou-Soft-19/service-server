@@ -23,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,7 +36,11 @@ public class VehicleStatusService {
 
     /* admin 권한 확인 로직 */
     private void validateRole(String email) {
-        Member member = memberJpaRepository.findByEmail(email).get();
+        Member member = memberJpaRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.info("해당 이메일을 가진 유저가 존재하지 않음.");
+                    return new IllegalArgumentException("해당 이메일을 가진 유저가 존재하지 않습니다.");
+                });
         if (!member.hasRole(Role.ROLE_ADMIN)) {
             log.info("관리자 권한을 가지고 있지 않음.");
             throw new IllegalArgumentException("관리자 권한을 가지고 있지 않습니다.");
@@ -47,22 +50,26 @@ public class VehicleStatusService {
     /* 위경도 기반 주변 주행중인 차량 조회 */
     public List<VehicleStatusDto> getVehicleStatusWithCoordinate(String email, VehicleStatusCoordinateRequestDto vehicleStatusCoordinateRequestDto) {
         validateRole(email);
-        return vehicleStatusRepository.findAllWithinRadius(vehicleStatusCoordinateRequestDto.getLongitude(), vehicleStatusCoordinateRequestDto.getLatitude(), vehicleStatusCoordinateRequestDto.getRadius()).stream()
-                .map(v -> {
-//                    NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(v.getVehicle()).get();
-                    return new VehicleStatusDto(v);
-                })
+        return vehicleStatusRepository.findAllWithinRadiusFetch(vehicleStatusCoordinateRequestDto.getLongitude(), vehicleStatusCoordinateRequestDto.getLatitude(), vehicleStatusCoordinateRequestDto.getRadius()).stream()
+                .map(VehicleStatusDto::new)
                 .toList();
     }
 
     /*주행중인 특정 응급 차량 조회 */
-    public VehicleStatusNavigationPathDto getVehicleStatusEmergencyOne(String email, Long vehicleId) {
+    public VehicleStatusNavigationPathDto getVehicleStatusEmergencyOne(String email, String vehicleStatusId) {
         validateRole(email);
 
-        Vehicle vehicle = vehicleRepository.findByVehicleId(vehicleId).get();
-        VehicleStatus vehicleStatus = vehicleStatusRepository.findVehicleStatusByVehicle(vehicle).get();
-        NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(vehicleStatus.getVehicle()).get();
+        VehicleStatus vehicleStatus = vehicleStatusRepository.findVehicleStatusByVehicleStatusId(vehicleStatusId)
+                .orElseThrow(() -> {
+                    log.info("해당 id값의 vehicleStatus가 존재하지 않음");
+                    return new IllegalArgumentException("해당 id값의 vehicleStatus가 존재하지 않습니다.");
+                });
 
+        NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(vehicleStatus.getVehicle())
+                .orElseThrow(() -> {
+                    log.info("해당 응급차량의 네비게이션이 등록되어 있지 않습니다.");
+                    return new IllegalArgumentException("해당 응급차량의 네비게이션이 등록되어 있지 않습니다.");
+                });
         return new VehicleStatusNavigationPathDto(vehicleStatus, navigationPath);
     }
 
@@ -71,7 +78,6 @@ public class VehicleStatusService {
         validateRole(email);
         List<VehicleStatusNavigationPathDto> result = new ArrayList<VehicleStatusNavigationPathDto>();
         vehicleStatusRepository.findVehicleStatusByIsEmergencyVehicle(false)
-                .stream()
                 .forEach( v -> {
                     NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(v.getVehicle()).get();
                     result.add(new VehicleStatusNavigationPathDto(v, navigationPath));
@@ -83,9 +89,8 @@ public class VehicleStatusService {
     public List<VehicleStatusDto> getEmergencyVehicleAll(String email) {
         validateRole(email);
         List<VehicleStatusDto> result = new ArrayList<VehicleStatusDto>();
-        vehicleStatusRepository.findVehicleStatusByIsEmergencyVehicle(true).stream()
+        vehicleStatusRepository.findVehicleStatusByIsEmergencyVehicle(true)
                 .forEach(v -> {
-//                    NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(v.getVehicle()).get();
                     result.add(new VehicleStatusDto(v));
                 });
 
@@ -97,9 +102,11 @@ public class VehicleStatusService {
     public List<VehicleStatusListDto> findVehicleStatusAll(String email) {
         validateRole(email);
         List<VehicleStatusListDto> vehicleStatusListDtoList = new ArrayList<VehicleStatusListDto>();
-        // TODO: 나중에 응급상황 컬럼 추가되면, 필터링해서 리턴해줘야 함.
-        vehicleStatusRepository.findAll().stream()
-                .forEach(v -> vehicleStatusListDtoList.add(new VehicleStatusListDto(v.getVehicle(), v.getVehicleStatusId())));
+        vehicleStatusRepository.findAll()
+                .forEach(v -> {
+                    if (v.isEmergencyVehicle()) {
+                        vehicleStatusListDtoList.add(new VehicleStatusListDto(v.getVehicle(), v.getVehicleStatusId()));
+                    }});
         return vehicleStatusListDtoList;
     }
 
@@ -118,7 +125,4 @@ public class VehicleStatusService {
         );
         vehicleStatusRepository.save(data);
     }
-
-
-
 }

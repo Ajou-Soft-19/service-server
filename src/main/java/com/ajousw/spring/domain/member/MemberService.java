@@ -8,8 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -21,16 +21,15 @@ public class MemberService {
     public List<EmergencyMemberDto> findEmergencyMember(Member member) {
         // amdin 확인
         checkAdmin(member);
+        List<EmergencyMemberDto> result = new ArrayList<EmergencyMemberDto>();
 
-        return memberJpaRepository.findAll()
-                .stream()
-                .map(v -> {
+        memberJpaRepository.findAll()
+                .forEach(v -> {
                             if (v.hasRole(Role.ROLE_EMERGENCY_VEHICLE)) {
-                                EmergencyMemberDto emergencyMemberDto = new EmergencyMemberDto(v.getId(), v.getUsername());
-                                return emergencyMemberDto;
+                                result.add(new EmergencyMemberDto(v.getId(), v.getUsername()));
                             }
-                            return null;
-                        }).collect(Collectors.toList());
+                });
+        return result;
     }
 
 

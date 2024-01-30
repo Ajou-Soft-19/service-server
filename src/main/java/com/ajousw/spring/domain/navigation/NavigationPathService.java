@@ -19,7 +19,11 @@ public class NavigationPathService {
     private final VehicleRepository vehicleRepository;
 
     public Optional<NavigationPath> findNavigationPathByVehicle(Long vehicleId) {
-        Vehicle vehicle = vehicleRepository.findByVehicleId(vehicleId).get();
+        Vehicle vehicle = vehicleRepository.findByVehicleId(vehicleId)
+                .orElseThrow(() -> {
+                    log.info("해당 id값의 vehicle이 존재하지 않음.");
+                    return new IllegalArgumentException("해당 id값의 vehicle이 존재하지 않습니다.");
+                });
         return navigationPathRepository.findNavigationPathByVehicle(vehicle);
     }
 

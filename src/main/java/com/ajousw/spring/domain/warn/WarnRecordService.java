@@ -24,10 +24,13 @@ public class WarnRecordService {
 
     // 시작 시간을 기준으로 어떤 차량이 경고를 받았는지 조회할 때
     public List<WarnRecord> getWarmListWithTimeAfter(String email, Long timeAfter ) {
-        Member member = memberJpaRepository.findByEmail(email).get();
+        Member member = memberJpaRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                   log.info("해당 email 의 유저가 존재하지 않음.");
+                   return new IllegalArgumentException("해당 email 의 유저가 존재하지 않습니다.");
+                });
         validateAdminRole(member);
-        List<WarnRecord> result = warnRecordRepository.findAllAfterTime(new Timestamp(timeAfter).toLocalDateTime());
-        return result;
+        return warnRecordRepository.findAllAfterTime(new Timestamp(timeAfter).toLocalDateTime());
     }
 
     private void validateAdminRole(Member member) {
