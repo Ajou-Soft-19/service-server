@@ -15,7 +15,7 @@ public class PathPointDto {
     private List<Double> location;
 
     public PathPointDto(PathPoint pathPoint) {
-        this.index = pathPoint.getIndex();
+        this.index = pathPoint.getPointIndex();
         this.location = List.of(pathPoint.getCoordinate().getX(), pathPoint.getCoordinate().getY());
     }
 
