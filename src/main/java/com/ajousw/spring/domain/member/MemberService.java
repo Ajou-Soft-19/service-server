@@ -2,10 +2,14 @@ package com.ajousw.spring.domain.member;
 
 import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
+import com.ajousw.spring.web.controller.dto.member.EmergencyMemberDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -13,6 +17,21 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class MemberService {
     public final MemberJpaRepository memberJpaRepository;
+    /* find emergency user */
+    public List<EmergencyMemberDto> findEmergencyMember(Member member) {
+        // amdin 확인
+        checkAdmin(member);
+        List<EmergencyMemberDto> result = new ArrayList<EmergencyMemberDto>();
+
+        memberJpaRepository.findAll()
+                .forEach(v -> {
+                            if (v.hasRole(Role.ROLE_EMERGENCY_VEHICLE)) {
+                                result.add(new EmergencyMemberDto(v.getId(), v.getUsername()));
+                            }
+                });
+        return result;
+    }
+
 
     public Member findByEmail(String email) {
         return memberJpaRepository.findByEmail(email).orElseThrow(() -> {

@@ -1,7 +1,9 @@
 package com.ajousw.spring.domain.vehicle.entity.repository;
 
+import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -22,4 +24,13 @@ public interface VehicleStatusRepository extends JpaRepository<VehicleStatus, UU
             + "ST_DWithin(vs.coordinate, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :radius, false) = true")
     List<VehicleStatus> findAllWithinRadius(@Param("lon") double longitude, @Param("lat") double latitude,
                                             @Param("radius") double radius);
+
+    @Query("select vs from VehicleStatus vs join fetch vs.vehicle where "
+            + "ST_DWithin(vs.coordinate, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :radius, false) = true")
+    List<VehicleStatus> findAllWithinRadiusFetch(@Param("lon") double longitude, @Param("lat") double latitude,
+                                            @Param("radius") double radius);
+
+    List<VehicleStatus> findVehicleStatusByIsEmergencyVehicle(boolean isEmergencyVehicle);
+    Optional<VehicleStatus> findVehicleStatusByVehicleStatusId(String vehicleStatusId);
+    Optional<VehicleStatus> findVehicleStatusByVehicle(Vehicle vehicleId);
 }

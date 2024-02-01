@@ -11,12 +11,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class VehicleStatusListDto {
-    public VehicleStatusListDto(Vehicle vehicle) {
+    public VehicleStatusListDto(Vehicle vehicle, String vehicleStatusId) {
         this.licenceNumber = vehicle.getLicenceNumber();
         this.vehicleId = vehicle.getVehicleId();
+        this.vehicleStatusId = vehicleStatusId;
     }
     @NotEmpty
     private Long vehicleId;
+
+    @NotEmpty
+    private String vehicleStatusId;
 
     @NotEmpty
     private String licenceNumber;
