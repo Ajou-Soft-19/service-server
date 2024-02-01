@@ -75,7 +75,7 @@ public class EmergencyNavigationService {
 
         List<PathPoint> pathPoints = createPathPoint(naviPath, navigationQueryResult.getPaths());
         List<CheckPoint> checkPoints = calculateCheckPoints(naviPath, pathPoints);
-        batchInsertJdbcRepository.saveAllInBatch(pathPoints);
+        batchInsertJdbcRepository.saveAllPathPointsInBatch(pathPoints);
         batchInsertJdbcRepository.saveAllCheckPointsInBatch(checkPoints);
 
         return createNavigationPathDto(naviPath, pathPoints, checkPoints);
