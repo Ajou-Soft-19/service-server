@@ -17,8 +17,6 @@ public class VehicleStatusDto {
     private LocalDateTime lastUpdateTime;
     private Double meterPerSec;
     private Double direction;
-    private boolean isOnAction;
-    private Long navigationPathId;
 
     // vehicle info
     private VehicleDto vehicleInfo;

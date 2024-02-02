@@ -107,6 +107,14 @@ public class EmergencyNavigationService {
                 navigationPath.getCheckPoints());
     }
 
+    // 어드민 조회용
+    @Transactional(readOnly = true)
+    public NavigationPathDto getNavigationPathById(Long naviPathId) {
+        NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
+        return createNavigationPathDto(navigationPath, navigationPath.getPathPoints(),
+                navigationPath.getCheckPoints());
+    }
+
     public void removeNavigationPath(String email, Long naviPathId) {
         Member member = findMemberByEmail(email);
         NavigationPath navigationPath = findNavigationPathById(naviPathId);

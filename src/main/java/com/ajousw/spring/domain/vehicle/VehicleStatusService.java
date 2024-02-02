@@ -9,20 +9,18 @@ import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
 import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
-import com.ajousw.spring.web.controller.dto.vehicle.VehicleStatusListDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusCoordinateRequestDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusNavigationPathDto;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -48,9 +46,11 @@ public class VehicleStatusService {
     }
 
     /* 위경도 기반 주변 주행중인 차량 조회 */
-    public List<VehicleStatusDto> getVehicleStatusWithCoordinate(String email, VehicleStatusCoordinateRequestDto vehicleStatusCoordinateRequestDto) {
+    public List<VehicleStatusDto> getVehicleStatusWithCoordinate(String email,
+                                                                 VehicleStatusCoordinateRequestDto vehicleStatusCoordinateRequestDto) {
         validateRole(email);
-        return vehicleStatusRepository.findAllWithinRadiusFetch(vehicleStatusCoordinateRequestDto.getLongitude(), vehicleStatusCoordinateRequestDto.getLatitude(), vehicleStatusCoordinateRequestDto.getRadius()).stream()
+        return vehicleStatusRepository.findAllWithinRadiusFetch(vehicleStatusCoordinateRequestDto.getLongitude(),
+                        vehicleStatusCoordinateRequestDto.getLatitude(), vehicleStatusCoordinateRequestDto.getRadius()).stream()
                 .map(VehicleStatusDto::new)
                 .toList();
     }
@@ -70,7 +70,8 @@ public class VehicleStatusService {
             throw new IllegalArgumentException("응급차량이 아닙니다.");
         }
 
-        NavigationPath navigationPath = emergencyEventRepository.findNavigationPathIdByVehicleId(vehicleStatus.getVehicle().getVehicleId());
+        NavigationPath navigationPath = emergencyEventRepository.findNavigationPathIdByVehicleId(
+                vehicleStatus.getVehicle().getVehicleId());
 
         return new VehicleStatusNavigationPathDto(vehicleStatus, navigationPath);
     }
@@ -79,9 +80,10 @@ public class VehicleStatusService {
     public List<VehicleStatusNavigationPathDto> getVehicleStatusAllExceptEmergency(String email) {
         validateRole(email);
         List<VehicleStatusNavigationPathDto> result = new ArrayList<VehicleStatusNavigationPathDto>();
-        vehicleStatusRepository.findVehicleStatusByIsEmergencyVehicle(false)
-                .forEach( v -> {
-                    NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(v.getVehicle()).get();
+        vehicleStatusRepository.findAllEmergencyVehicle()
+                .forEach(v -> {
+                    NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(v.getVehicle())
+                            .get();
                     result.add(new VehicleStatusNavigationPathDto(v, navigationPath));
                 });
         return result;
@@ -91,7 +93,7 @@ public class VehicleStatusService {
     public List<VehicleStatusDto> getEmergencyVehicleAll(String email) {
         validateRole(email);
         List<VehicleStatusDto> result = new ArrayList<VehicleStatusDto>();
-        vehicleStatusRepository.findVehicleStatusByIsEmergencyVehicle(true)
+        vehicleStatusRepository.findAllEmergencyVehicle()
                 .forEach(v -> {
                     result.add(new VehicleStatusDto(v));
                 });
@@ -99,17 +101,12 @@ public class VehicleStatusService {
         return result;
     }
 
-
     /* 전체 VehicleStatus 조회 */
-    public List<VehicleStatusListDto> findVehicleStatusAll(String email) {
+    public List<VehicleStatusDto> findAllActiveEmergencyVehicle(String email) {
         validateRole(email);
-        List<VehicleStatusListDto> vehicleStatusListDtoList = new ArrayList<VehicleStatusListDto>();
-        vehicleStatusRepository.findAll()
-                .forEach(v -> {
-                    if (v.isEmergencyVehicle()) {
-                        vehicleStatusListDtoList.add(new VehicleStatusListDto(v.getVehicle(), v.getVehicleStatusId()));
-                    }});
-        return vehicleStatusListDtoList;
+        return vehicleStatusRepository.findAllEmergencyVehicle()
+                .stream().map(VehicleStatusDto::new)
+                .toList();
     }
 
     // todo: mock data 추가용으로 삭제 예정

@@ -30,7 +30,9 @@ public interface VehicleStatusRepository extends JpaRepository<VehicleStatus, UU
     List<VehicleStatus> findAllWithinRadiusFetch(@Param("lon") double longitude, @Param("lat") double latitude,
                                                  @Param("radius") double radius);
 
-    List<VehicleStatus> findVehicleStatusByIsEmergencyVehicle(boolean isEmergencyVehicle);
+    @Query("select vs from VehicleStatus vs join fetch vs.vehicle where vs.isEmergencyVehicle=true and vs.coordinate!=null")
+    List<VehicleStatus> findAllEmergencyVehicle();
+
 
     Optional<VehicleStatus> findVehicleStatusByVehicleStatusId(String vehicleStatusId);
 

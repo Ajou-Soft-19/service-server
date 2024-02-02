@@ -5,14 +5,39 @@ import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.vehicle.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 @AllArgsConstructor
 public class NavigationPathWithPointsDto {
+    private String vehicleStatusId;
+    private Long vehicleId;
+    private VehicleType vehicleType;
+    private String licenceNumber;
+    private Double longitude;
+    private Double latitude;
+    private Double direction;
+
+    // navigationPath
+    private Long navigationPathId;
+    private Double destLatitude;
+    private Double destLongitude;
+    private Double sourceLatitude;
+    private Double sourceLongitude;
+    private Long currentPathPoint;
+    private Long distance;
+    private Long duration;
+    private Provider provider;
+    private Long pathPointSize;
+
+    // pathPoints
+    private List<PathPointItem> pathPoints;
+
+    // checkPoints
+    private List<CheckPointItem> checkPoints;
+
     public NavigationPathWithPointsDto(NavigationPath navigationPath,
                                        Vehicle vehicle,
                                        VehicleStatus vehicleStatus,
@@ -42,30 +67,4 @@ public class NavigationPathWithPointsDto {
         // checkPoints
         this.checkPoints = checkPoints;
     }
-
-    private String vehicleStatusId;
-    private Long vehicleId;
-    private VehicleType vehicleType;
-    private String licenceNumber;
-    private Double longitude;
-    private Double latitude;
-    private Double direction;
-
-    // navigationPath
-    private Long navigationPathId;
-    private Double destLatitude;
-    private Double destLongitude;
-    private Double sourceLatitude;
-    private Double sourceLongitude;
-    private Long currentPathPoint;
-    private Long distance;
-    private Long duration;
-    private Provider provider;
-    private Long pathPointSize;
-
-    // pathPoints
-    private List<PathPointItem> pathPoints;
-
-    // checkPoints
-    private List<CheckPointItem> checkPoints;
 }

@@ -2,12 +2,11 @@ package com.ajousw.spring.web.controller;
 
 import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.navigation.NavigationPathService;
+import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.vehicle.VehicleStatusService;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
 import com.ajousw.spring.domain.warn.WarnRecordService;
 import com.ajousw.spring.web.controller.dto.navigationPath.NavigationPathRequestDto;
-import com.ajousw.spring.web.controller.dto.navigationPath.NavigationPathWithPointsDto;
-import com.ajousw.spring.web.controller.dto.vehicle.VehicleStatusListDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusCoordinateRequestDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusNavigationPathDto;
@@ -17,6 +16,7 @@ import com.ajousw.spring.web.controller.dto.warm.WarnListRequestDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -68,7 +68,7 @@ public class AdminController {
     /* 현재 주행중인 모든 응급인 차량 리스트 조회 */
     @GetMapping("/emergency/all")
     public ApiResponseJson getVehicleStatusAll(@AuthenticationPrincipal UserPrinciple user) {
-        List<VehicleStatusListDto> result = vehicleStatusService.findVehicleStatusAll(user.getEmail());
+        List<VehicleStatusDto> result = vehicleStatusService.findAllActiveEmergencyVehicle(user.getEmail());
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
@@ -82,13 +82,22 @@ public class AdminController {
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
-    /* 주행중인 응급차량 조회 2 */
-    @PostMapping("/monit/vehicle-status/emergency")
+    /* 응급 상황인 차량의 경로 조회 */
+    @PostMapping("/monit/vehicle-status/emergency/route")
     public ApiResponseJson getNavigationPathByVehicleStatusId(@AuthenticationPrincipal UserPrinciple user,
                                                               @Valid @RequestBody NavigationPathRequestDto navigationPathRequestDto) {
-        NavigationPathWithPointsDto result = navigationPathService.getNavigationPathWithPointsByVehicleStatusId(
+        NavigationPathDto navigationPathDto = navigationPathService.getNavigationPathWithPointsByVehicleStatusId(
                 user.getEmail(), navigationPathRequestDto.getVehicleStatusId());
-        return new ApiResponseJson(HttpStatus.OK, result);
+        return new ApiResponseJson(HttpStatus.OK, navigationPathDto);
+    }
+
+    /* 응급 상황인 차량의 경로 조회 */
+    @PostMapping("/monit/vehicle-status/emergency/currentPoint")
+    public ApiResponseJson getNavigationPathPointByVehicleStatusId(@AuthenticationPrincipal UserPrinciple user,
+                                                                   @Valid @RequestBody NavigationPathRequestDto navigationPathRequestDto) {
+        Long currentPathPoint = navigationPathService.getCurrentPathPoint(
+                user.getEmail(), navigationPathRequestDto.getVehicleStatusId());
+        return new ApiResponseJson(HttpStatus.OK, Map.of("currentPathPoint", currentPathPoint));
     }
 
     /* 모든 응급 차량의 경로 조회 */

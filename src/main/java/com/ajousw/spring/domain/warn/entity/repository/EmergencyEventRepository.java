@@ -15,6 +15,9 @@ public interface EmergencyEventRepository extends JpaRepository<EmergencyEvent, 
     @Query("select ee from EmergencyEvent ee where ee.emergencyEventId = :emergencyEventId")
     Optional<EmergencyEvent> findOneByEmergencyEventId(@Param("emergencyEventId") Long emergencyEventId);
 
+    @Query("select ee from EmergencyEvent ee where ee.vehicle = :vehicle and ee.isActive=true order by ee.createdDate desc limit 1")
+    Optional<EmergencyEvent> findEmergencyEventByVehicle(@Param("vehicle") Vehicle vehicle);
+
     @Query("select ee.navigationPath from EmergencyEvent ee where ee.isActive and ee.vehicle.vehicleId = :vehicleId")
     NavigationPath findNavigationPathIdByVehicleId(@Param("vehicleId") Long vehicleId);
 
@@ -30,11 +33,11 @@ public interface EmergencyEventRepository extends JpaRepository<EmergencyEvent, 
     List<EmergencyEvent> findActiveEmergencyEventsOrderByDate(@Param("member") Member member,
                                                               @Param("vehicle") Vehicle vehicle);
 
-    @Query("select e from EmergencyEvent e join fetch e.warnRecords where e.member=:member and e.vehicle=:vehicle order by e.createdDate desc")
+    @Query("select e from EmergencyEvent e left join fetch e.warnRecords where e.member=:member and e.vehicle=:vehicle order by e.createdDate desc")
     List<EmergencyEvent> findAllEmergencyEventsOrderByDateFetch(@Param("member") Member member,
                                                                 @Param("vehicle") Vehicle vehicle);
 
-    @Query("select e from EmergencyEvent e join fetch e.warnRecords where e.member=:member and e.vehicle=:vehicle and e.isActive=true order by e.createdDate desc")
+    @Query("select e from EmergencyEvent e left join fetch e.warnRecords where e.member=:member and e.vehicle=:vehicle and e.isActive=true order by e.createdDate desc")
     List<EmergencyEvent> findActiveEmergencyEventsOrderByDateFetch(@Param("member") Member member,
                                                                    @Param("vehicle") Vehicle vehicle);
 }
