@@ -14,6 +14,7 @@ import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusCoordinat
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusNavigationPathDto;
 import com.ajousw.spring.web.controller.dto.warm.WarnInfo;
+import com.ajousw.spring.web.controller.dto.warm.WarnListEmergencyRequestDto;
 import com.ajousw.spring.web.controller.dto.warm.WarnListRequestDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
@@ -40,11 +41,19 @@ public class AdminController {
         return "test";
     }
 
-    /* 경고를 받은 차량 조회 */
-    @PostMapping("/monit/warn-list")
+    /* 경고를 받은 차량 조회 - 전체 */
+    @PostMapping("/monit/warn-list/all")
     public ApiResponseJson getVehicleWarmList(@AuthenticationPrincipal UserPrinciple user,
                                               @RequestBody WarnListRequestDto warnListRequestDto) {
         List<WarnInfo> result = warnRecordService.getWarmListWithTimeAfter(user.getEmail(), warnListRequestDto.getTimeAfter());
+        return new ApiResponseJson(HttpStatus.OK, result);
+    }
+
+    /* 경고를 받은 차량 조회 - emergency_event_id 기준 */
+    @PostMapping("/monit/warn-list")
+    public ApiResponseJson getVehicleWarnListWithEmergencyEventId(@AuthenticationPrincipal UserPrinciple user,
+                                                                  @RequestBody WarnListEmergencyRequestDto warnListEmergencyRequestDto) {
+        List<WarnInfo> result = warnRecordService.getWarmListWithTimeAfterAndEmergencyEventId(user.getEmail(), warnListEmergencyRequestDto);
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 

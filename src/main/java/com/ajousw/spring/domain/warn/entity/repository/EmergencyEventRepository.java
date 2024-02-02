@@ -11,6 +11,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface EmergencyEventRepository extends JpaRepository<EmergencyEvent, Long> {
+
+    @Query("select ee from EmergencyEvent ee where ee.emergencyEventId = :emergencyEventId")
+    Optional<EmergencyEvent> findOneByEmergencyEventId(@Param("emergencyEventId") Long emergencyEventId);
+
     @Query("select ee.navigationPath from EmergencyEvent ee where ee.isActive and ee.vehicle.vehicleId = :vehicleId")
     NavigationPath findNavigationPathIdByVehicleId(@Param("vehicleId") Long vehicleId);
 
