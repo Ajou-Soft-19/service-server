@@ -1,15 +1,20 @@
 package com.ajousw.spring.web.controller;
 
 import com.ajousw.spring.domain.member.UserPrinciple;
+import com.ajousw.spring.domain.navigation.NavigationPathService;
+import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.vehicle.VehicleStatusService;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
 import com.ajousw.spring.domain.warn.WarnRecordService;
-import com.ajousw.spring.domain.warn.entity.WarnRecord;
+import com.ajousw.spring.web.controller.dto.navigationPath.NavigationPathRequestDto;
+import com.ajousw.spring.web.controller.dto.navigationPath.NavigationPathWithPointsDto;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleStatusListDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusCoordinateRequestDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusNavigationPathDto;
+import com.ajousw.spring.web.controller.dto.warm.WarnInfo;
+import com.ajousw.spring.web.controller.dto.warm.WarnListEmergencyRequestDto;
 import com.ajousw.spring.web.controller.dto.warm.WarnListRequestDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
@@ -29,17 +34,26 @@ public class AdminController {
     private final VehicleStatusService vehicleStatusService;
     private final VehicleRepository vehicleRepository;
     private final WarnRecordService warnRecordService;
+    private final NavigationPathService navigationPathService;
 
     @GetMapping("")
     public String test() {
         return "test";
     }
 
-    /* 경고를 받은 차량 조회 */
-    @PostMapping("/monit/warn-list")
+    /* 경고를 받은 차량 조회 - 전체 */
+    @PostMapping("/monit/warn-list/all")
     public ApiResponseJson getVehicleWarmList(@AuthenticationPrincipal UserPrinciple user,
                                               @RequestBody WarnListRequestDto warnListRequestDto) {
-        List<WarnRecord> result = warnRecordService.getWarmListWithTimeAfter(user.getEmail(), warnListRequestDto.getTimeAfter());
+        List<WarnInfo> result = warnRecordService.getWarmListWithTimeAfter(user.getEmail(), warnListRequestDto.getTimeAfter());
+        return new ApiResponseJson(HttpStatus.OK, result);
+    }
+
+    /* 경고를 받은 차량 조회 - emergency_event_id 기준 */
+    @PostMapping("/monit/warn-list")
+    public ApiResponseJson getVehicleWarnListWithEmergencyEventId(@AuthenticationPrincipal UserPrinciple user,
+                                                                  @RequestBody WarnListEmergencyRequestDto warnListEmergencyRequestDto) {
+        List<WarnInfo> result = warnRecordService.getWarmListWithTimeAfterAndEmergencyEventId(user.getEmail(), warnListEmergencyRequestDto);
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
@@ -60,9 +74,17 @@ public class AdminController {
 
     /* 주행중인 응급차량 조회 */
     @GetMapping("/monit/vehicle-status/emergency")
-    public ApiResponseJson getNavigationPathByVehicleStatusId(@Valid @RequestParam(value="vehicleStatusId") String vehicleStatusId,
+    public ApiResponseJson getNavigationPathIdByVehicleStatusId(@Valid @RequestParam(value="vehicleStatusId") String vehicleStatusId,
                                                               @AuthenticationPrincipal UserPrinciple user) {
         VehicleStatusNavigationPathDto result = vehicleStatusService.getVehicleStatusEmergencyOne(user.getEmail(), vehicleStatusId);
+        return new ApiResponseJson(HttpStatus.OK, result);
+    }
+
+    /* 주행중인 응급차량 조회 2 */
+    @PostMapping("/monit/vehicle-status/emergency")
+    public ApiResponseJson getNavigationPathByVehicleStatusId(@AuthenticationPrincipal UserPrinciple user,
+                                                              @Valid @RequestBody NavigationPathRequestDto navigationPathRequestDto) {
+        NavigationPathWithPointsDto result = navigationPathService.getNavigationPathWithPointsByVehicleStatusId(user.getEmail(), navigationPathRequestDto.getVehicleStatusId());
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
