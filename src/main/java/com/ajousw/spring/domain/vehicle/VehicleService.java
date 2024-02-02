@@ -41,7 +41,9 @@ public class VehicleService {
     public void removeVehicle(String email, Long vehicleId) {
         Vehicle vehicle = findVehicleByVehicleId(vehicleId);
         Member member = memberService.findByEmail(email);
-        if (member.getVehicles().contains(vehicle)) {
+
+        // TODO: emergency_event에 연관되어 있는 경우 삭제 안됨 -> 따로 처리 어케 할지 생각해봐야 함.
+        if (vehicleRepository.existsByVehicleIdAndMemberId(vehicleId, member.getId())) {
             vehicleRepository.delete(vehicle);
         } else {
             log.info("유저에게 등록되어 있지 않은 차량임.");

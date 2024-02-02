@@ -7,8 +7,8 @@ import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.navigation.entity.repository.NavigationPathRepository;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
-import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
+import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleStatusListDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusCoordinateRequestDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusDto;
@@ -30,9 +30,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class VehicleStatusService {
     private final VehicleStatusRepository vehicleStatusRepository;
-    private final VehicleRepository vehicleRepository;
     private final NavigationPathRepository navigationPathRepository;
     private final MemberJpaRepository memberJpaRepository;
+    private final EmergencyEventRepository emergencyEventRepository;
 
     /* admin 권한 확인 로직 */
     private void validateRole(String email) {
@@ -65,11 +65,13 @@ public class VehicleStatusService {
                     return new IllegalArgumentException("해당 id값의 vehicleStatus가 존재하지 않습니다.");
                 });
 
-        NavigationPath navigationPath = navigationPathRepository.findNavigationPathByVehicle(vehicleStatus.getVehicle())
-                .orElseThrow(() -> {
-                    log.info("해당 응급차량의 네비게이션이 등록되어 있지 않습니다.");
-                    return new IllegalArgumentException("해당 응급차량의 네비게이션이 등록되어 있지 않습니다.");
-                });
+        if (!vehicleStatus.isEmergencyVehicle()) {
+            log.info("응급 차량이 아님");
+            throw new IllegalArgumentException("응급차량이 아닙니다.");
+        }
+
+        NavigationPath navigationPath = emergencyEventRepository.findNavigationPathIdByVehicleId(vehicleStatus.getVehicle().getVehicleId());
+
         return new VehicleStatusNavigationPathDto(vehicleStatus, navigationPath);
     }
 
