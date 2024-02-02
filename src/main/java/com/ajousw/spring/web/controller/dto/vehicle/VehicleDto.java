@@ -19,6 +19,7 @@ public class VehicleDto {
         this.licenceNumber = vehicle.getLicenceNumber();
         this.vehicleId = vehicle.getVehicleId();
     }
+
     @NotEmpty
     private Long vehicleId;
 
@@ -30,6 +31,4 @@ public class VehicleDto {
 
     @EnumValidation(enumClass = VehicleType.class)
     private VehicleType vehicleType;
-
-    private String phoneNumber;
 }

@@ -13,13 +13,17 @@ import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusNavigatio
 import com.ajousw.spring.web.controller.dto.warm.WarnListRequestDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -39,7 +43,8 @@ public class AdminController {
     @PostMapping("/monit/warn-list")
     public ApiResponseJson getVehicleWarmList(@AuthenticationPrincipal UserPrinciple user,
                                               @RequestBody WarnListRequestDto warnListRequestDto) {
-        List<WarnRecord> result = warnRecordService.getWarmListWithTimeAfter(user.getEmail(), warnListRequestDto.getTimeAfter());
+        List<WarnRecord> result = warnRecordService.getWarmListWithTimeAfter(user.getEmail(),
+                warnListRequestDto.getTimeAfter());
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
@@ -47,7 +52,8 @@ public class AdminController {
     @PostMapping("/monit/vehicle-status")
     public ApiResponseJson getVehicleStatusWithCoordinate(@AuthenticationPrincipal UserPrinciple user,
                                                           @Valid @RequestBody VehicleStatusCoordinateRequestDto vehicleCreateDto) {
-        List<VehicleStatusDto> result = vehicleStatusService.getVehicleStatusWithCoordinate(user.getEmail(), vehicleCreateDto);
+        List<VehicleStatusDto> result = vehicleStatusService.getVehicleStatusWithCoordinate(user.getEmail(),
+                vehicleCreateDto);
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
@@ -58,18 +64,21 @@ public class AdminController {
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
-    /* 주행중인 응급차량 조회 */
+    /* 주행중인 특정 응급차량 조회 */
     @GetMapping("/monit/vehicle-status/emergency")
-    public ApiResponseJson getNavigationPathByVehicleStatusId(@Valid @RequestParam(value="vehicleStatusId") String vehicleStatusId,
-                                                              @AuthenticationPrincipal UserPrinciple user) {
-        VehicleStatusNavigationPathDto result = vehicleStatusService.getVehicleStatusEmergencyOne(user.getEmail(), vehicleStatusId);
+    public ApiResponseJson getNavigationPathByVehicleStatusId(
+            @Valid @RequestParam(value = "vehicleStatusId") String vehicleStatusId,
+            @AuthenticationPrincipal UserPrinciple user) {
+        VehicleStatusNavigationPathDto result = vehicleStatusService.getVehicleStatusEmergencyOne(user.getEmail(),
+                vehicleStatusId);
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
     /* 모든 응급 차량의 경로 조회 */
     @GetMapping("/monit/vehicle-status/emergency/all")
     public ApiResponseJson getNavigationPathAll(@AuthenticationPrincipal UserPrinciple user) {
-        List<VehicleStatusNavigationPathDto> result = vehicleStatusService.getVehicleStatusAllExceptEmergency(user.getEmail());
+        List<VehicleStatusNavigationPathDto> result = vehicleStatusService.getVehicleStatusAllExceptEmergency(
+                user.getEmail());
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 

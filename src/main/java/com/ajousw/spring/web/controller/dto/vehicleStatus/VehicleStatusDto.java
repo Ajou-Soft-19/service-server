@@ -1,37 +1,18 @@
 package com.ajousw.spring.web.controller.dto.vehicleStatus;
 
-import com.ajousw.spring.domain.vehicle.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
-import lombok.*;
-
+import com.ajousw.spring.web.controller.dto.vehicle.VehicleDto;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor
 public class VehicleStatusDto {
-    @Builder
-    public VehicleStatusDto(VehicleStatus vehicleStatus) {
-        // vehicle info
-        this.vehicleId = vehicleStatus.getVehicle().getVehicleId();
-        this.licenceNumber = vehicleStatus.getVehicle().getLicenceNumber();
-        this.vehicleType = vehicleStatus.getVehicle().getVehicleType();
-        this.vehicleStatusId = vehicleStatus.getVehicleStatusId();
-        this.latitude = vehicleStatus.getCoordinate().getX();
-        this.longitude = vehicleStatus.getCoordinate().getY();
-        this.isEmergencyVehicle = vehicleStatus.isEmergencyVehicle();
-        this.lastUpdateTime = vehicleStatus.getLastUpdateTime();
-        this.meterPerSec = vehicleStatus.getMeterPerSec();
-        this.direction = vehicleStatus.getDirection();
-
-        // TODO: 수정해야 함.
-//        this.isOnAction = true;
-//        this.navigationPathId = navigationPath.getNaviPathId();
-    }
     private String vehicleStatusId;
-//    private UUID vehicleStatusId;
-    private VehicleType vehicleType;
-    private Double longitude;
     private Double latitude;
+    private Double longitude;
     private boolean isEmergencyVehicle;
     private LocalDateTime lastUpdateTime;
     private Double meterPerSec;
@@ -40,6 +21,20 @@ public class VehicleStatusDto {
     private Long navigationPathId;
 
     // vehicle info
-    private Long vehicleId;
-    private String licenceNumber;
+    private VehicleDto vehicleInfo;
+
+    @Builder
+    public VehicleStatusDto(VehicleStatus vehicleStatus) {
+        if (vehicleStatus.getVehicle() != null) {
+            this.vehicleInfo = new VehicleDto(vehicleStatus.getVehicle());
+        }
+        this.vehicleStatusId = vehicleStatus.getVehicleStatusId();
+        this.latitude = vehicleStatus.getCoordinate().getY();
+        this.longitude = vehicleStatus.getCoordinate().getX();
+        this.isEmergencyVehicle = vehicleStatus.isEmergencyVehicle();
+        this.lastUpdateTime = vehicleStatus.getLastUpdateTime();
+        this.meterPerSec = vehicleStatus.getMeterPerSec();
+        this.direction = vehicleStatus.getDirection();
+    }
+
 }
