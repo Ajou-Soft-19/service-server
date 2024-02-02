@@ -22,6 +22,7 @@ import com.ajousw.spring.domain.navigation.route.OsrmTableService;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
 import com.ajousw.spring.domain.warn.AlertService;
+import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.domain.warn.util.CoordinateUtil;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -49,6 +50,7 @@ public class EmergencyNavigationService {
     private final CheckPointRepository checkPointRepository;
     private final NavigationPathRepository navigationPathRepository;
     private final BatchInsertJdbcRepository batchInsertJdbcRepository;
+    private final EmergencyEventRepository emergencyEventRepository;
     private final AlertService alertService;
     private final OsrmTableService osrmTableService;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
@@ -111,6 +113,9 @@ public class EmergencyNavigationService {
         Member member = findMemberByEmail(email);
         NavigationPath navigationPath = findNavigationPathById(naviPathId);
         checkPathOwner(member, navigationPath);
+        if (emergencyEventRepository.existsByNavigationPath(navigationPath)) {
+            throw new IllegalStateException("Emergency Event에 등록된 NavigationPath는 삭제 불가능합니다.");
+        }
 
         checkPointRepository.deleteAllByNavigationPathId(navigationPath.getNaviPathId());
         pathPointRepository.deleteByNavigationPathId(navigationPath.getNaviPathId());

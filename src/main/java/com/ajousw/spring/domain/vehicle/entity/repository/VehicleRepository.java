@@ -1,5 +1,6 @@
 package com.ajousw.spring.domain.vehicle.entity.repository;
 
+import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import java.util.List;
 import java.util.Optional;
@@ -11,4 +12,6 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     boolean existsByLicenceNumber(String licenceNumber);
 
     List<Vehicle> findAllByMemberId(Long memberId);
+
+    boolean existsByMemberAndVehicleId(Member member, Long vehicleId);
 }

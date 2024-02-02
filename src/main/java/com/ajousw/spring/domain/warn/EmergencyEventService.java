@@ -15,6 +15,7 @@ import com.ajousw.spring.domain.warn.entity.dto.EmergencyEventDto;
 import com.ajousw.spring.domain.warn.entity.dto.WarnRecordDto;
 import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.web.controller.dto.emergency.EmergencyEventCreateDto;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -36,6 +37,7 @@ public class EmergencyEventService {
     private final MemberJpaRepository memberRepository;
     private final VehicleRepository vehicleRepository;
 
+
     public EmergencyEventDto createEmergencyEvent(String email, EmergencyEventCreateDto eventCreateDto) {
         Member member = findMemberByEmail(email);
         Vehicle vehicle = findVehicleById(eventCreateDto.getVehicleId());
@@ -47,6 +49,7 @@ public class EmergencyEventService {
         if (emergencyEventRepository.existsByNavigationPath(path)) {
             throw new IllegalArgumentException("NavigationPath is Already Registered as Emergency Event");
         }
+        emergencyEventRepository.endAllActiveEmergencyEventByVehicleId(LocalDateTime.now(), vehicle);
 
         EmergencyEvent emergencyEvent = new EmergencyEvent(path, member, vehicle);
         emergencyEventRepository.save(emergencyEvent);

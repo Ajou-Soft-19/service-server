@@ -4,6 +4,7 @@ import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.MemberService;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
+import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleCreateDto;
 import com.ajousw.spring.web.controller.dto.vehicle.VehicleDto;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class VehicleService {
+    private final EmergencyEventRepository emergencyEventRepository;
     public final VehicleRepository vehicleRepository;
     private final MemberService memberService;
 
@@ -41,12 +43,17 @@ public class VehicleService {
     public void removeVehicle(String email, Long vehicleId) {
         Vehicle vehicle = findVehicleByVehicleId(vehicleId);
         Member member = memberService.findByEmail(email);
-        if (member.getVehicles().contains(vehicle)) {
-            vehicleRepository.delete(vehicle);
-        } else {
+
+        if (!vehicleRepository.existsByMemberAndVehicleId(member, vehicleId)) {
             log.info("유저에게 등록되어 있지 않은 차량임.");
             throw new IllegalArgumentException("차량 소유주가 아닙니다.");
         }
+
+        if (emergencyEventRepository.existsByVehicle(vehicle)) {
+            throw new IllegalStateException("Emergency Event에 등록된 Vehicle은 삭제 불가능합니다.");
+        }
+
+        vehicleRepository.delete(vehicle);
     }
 
     /* 자동차 등록 */
