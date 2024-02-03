@@ -8,13 +8,17 @@ import com.ajousw.spring.domain.navigation.entity.repository.NavigationPathRepos
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
+import com.ajousw.spring.domain.warn.entity.EmergencyEvent;
 import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusCoordinateRequestDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusNavigationPathDto;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.jts.geom.Coordinate;
@@ -49,10 +53,38 @@ public class VehicleStatusService {
     public List<VehicleStatusDto> getVehicleStatusWithCoordinate(String email,
                                                                  VehicleStatusCoordinateRequestDto vehicleStatusCoordinateRequestDto) {
         validateRole(email);
-        return vehicleStatusRepository.findAllWithinRadiusFetch(vehicleStatusCoordinateRequestDto.getLongitude(),
-                        vehicleStatusCoordinateRequestDto.getLatitude(), vehicleStatusCoordinateRequestDto.getRadius()).stream()
-                .map(VehicleStatusDto::new)
-                .toList();
+        List<VehicleStatus> vehicleStatuses = vehicleStatusRepository.findAllWithinRadiusFetch(vehicleStatusCoordinateRequestDto.getLongitude(),
+                vehicleStatusCoordinateRequestDto.getLatitude(), vehicleStatusCoordinateRequestDto.getRadius());
+
+        // 응급 차량들의 vehicleId
+        List<Long> emergencyVehicleIds = vehicleStatuses.stream().filter(VehicleStatus::isEmergencyVehicle).map(v -> v.getVehicle().getVehicleId()).toList();
+        System.out.println(emergencyVehicleIds);
+
+        // 응급 상태인 응급 차량의 emergencyEventId 뽑아냄
+        // key: vehicleId
+        // value: emergencyEventId
+        List<EmergencyEvent> emergencyEvents = emergencyEventRepository.findEmergencyEventIdByVehicle(emergencyVehicleIds);
+        Map<Long, Long> emergencyEventMap = new HashMap<Long, Long>();
+        emergencyEvents.forEach(e -> {
+            emergencyEventMap.put(e.getVehicle().getVehicleId(), e.getEmergencyEventId());
+        });
+
+        return vehicleStatuses
+                .stream()
+                .map( v -> {
+                    return insertEmergencyEventId(v, emergencyEventMap);
+                }).toList();
+    }
+
+    private VehicleStatusDto insertEmergencyEventId(VehicleStatus v, Map<Long, Long> emergencyEvents) {
+        if (v.getVehicle() != null) {
+            System.out.println(emergencyEvents.get(v.getVehicle().getVehicleId()));
+        }
+        if ( v.getVehicle() != null && emergencyEvents.get(v.getVehicle().getVehicleId()) != null) {
+            return new VehicleStatusDto(v, emergencyEvents.get(v.getVehicle().getVehicleId()));
+        } else {
+            return new VehicleStatusDto(v);
+        }
     }
 
     /*주행중인 특정 응급 차량 조회 */
@@ -95,7 +127,7 @@ public class VehicleStatusService {
         List<VehicleStatusDto> result = new ArrayList<VehicleStatusDto>();
         vehicleStatusRepository.findAllEmergencyVehicle()
                 .forEach(v -> {
-                    result.add(new VehicleStatusDto(v));
+                    result.add(new VehicleStatusDto(v, emergencyEventRepository.findEmergencyEventIdByVehicle(v.getVehicle())));
                 });
 
         return result;
