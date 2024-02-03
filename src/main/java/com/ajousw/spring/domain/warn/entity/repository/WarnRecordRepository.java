@@ -14,7 +14,11 @@ public interface WarnRecordRepository extends JpaRepository<WarnRecord, Long> {
     @Query("select wr from WarnRecord wr where wr.createdDate >= :timeAfter")
     List<WarnRecord> findAllAfterTime(@Param("timeAfter") LocalDateTime timeAfter);
 
-    @Query("select wr from WarnRecord wr where wr.createdDate >= :timeAfter and wr.emergencyEvent =:emergencyEvent")
-    List<WarnRecord> findAllByTimeAfterAndEmergencyEvent(@Param("timeAfter") LocalDateTime timeAfter,
-                                                           @Param("emergencyEvent") EmergencyEvent emergencyEvent);
+    @Query("select wr from WarnRecord wr where wr.emergencyEvent.emergencyEventId = :emergencyEventId")
+    List<WarnRecord> findAllByEmergencyEventId(@Param("emergencyEventId") Long emergencyEventId);
+
+    @Query("select wr from WarnRecord wr where wr.warnRecordId.emergencyEventId = :emergencyEventId and wr.warnRecordId.checkPointIndex = :checkPointIndex")
+    List<WarnRecord> findAllByEmergencyEventIdAndCheckPointIndex(@Param("emergencyEventId") Long emergencyEventId,
+                                                                 @Param("checkPointIndex") Long checkPointIndex);
+
 }

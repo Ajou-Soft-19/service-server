@@ -21,6 +21,22 @@ public class VehicleStatusDto {
 
     // vehicle info
     private VehicleDto vehicleInfo;
+    private Long emergencyEventId;
+
+    @Builder
+    public VehicleStatusDto(VehicleStatus vehicleStatus, Long emergencyEventId) {
+        if (vehicleStatus.getVehicle() != null) {
+            this.vehicleInfo = new VehicleDto(vehicleStatus.getVehicle());
+        }
+        this.vehicleStatusId = vehicleStatus.getVehicleStatusId();
+        this.latitude = vehicleStatus.getCoordinate().getY();
+        this.longitude = vehicleStatus.getCoordinate().getX();
+        this.isEmergencyVehicle = vehicleStatus.isEmergencyVehicle();
+        this.lastUpdateTime = vehicleStatus.getLastUpdateTime();
+        this.meterPerSec = vehicleStatus.getMeterPerSec();
+        this.direction = vehicleStatus.getDirection();
+        this.emergencyEventId = emergencyEventId;
+    }
 
     @Builder
     public VehicleStatusDto(VehicleStatus vehicleStatus) {
@@ -34,6 +50,6 @@ public class VehicleStatusDto {
         this.lastUpdateTime = vehicleStatus.getLastUpdateTime();
         this.meterPerSec = vehicleStatus.getMeterPerSec();
         this.direction = vehicleStatus.getDirection();
+        this.emergencyEventId = null; // 매개변수 없으면 Null
     }
-
 }

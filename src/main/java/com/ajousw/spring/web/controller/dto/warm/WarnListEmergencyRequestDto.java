@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class WarnListEmergencyRequestDto {
-    private Long timeAfter;
+//    private Long timeAfter;
     private Long emergencyEventId;
+    private Long checkPointIndex;
 }
