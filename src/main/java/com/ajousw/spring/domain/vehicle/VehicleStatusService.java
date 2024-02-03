@@ -94,9 +94,6 @@ public class VehicleStatusService {
 
 
     private VehicleStatusDto insertEmergencyEventId(VehicleStatus v, Map<Long, Long> emergencyEvents) {
-        if (v.getVehicle() != null) {
-            System.out.println(emergencyEvents.get(v.getVehicle().getVehicleId()));
-        }
         if ( v.getVehicle() != null && emergencyEvents.get(v.getVehicle().getVehicleId()) != null) {
             return new VehicleStatusDto(v, emergencyEvents.get(v.getVehicle().getVehicleId()));
         } else {
