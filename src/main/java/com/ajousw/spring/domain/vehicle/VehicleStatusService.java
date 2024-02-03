@@ -5,7 +5,6 @@ import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.navigation.entity.repository.NavigationPathRepository;
-import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
 import com.ajousw.spring.domain.warn.entity.EmergencyEvent;
@@ -13,7 +12,6 @@ import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusCoordinateRequestDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusDto;
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusNavigationPathDto;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,8 +19,6 @@ import java.util.Map;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,9 +52,33 @@ public class VehicleStatusService {
         List<VehicleStatus> vehicleStatuses = vehicleStatusRepository.findAllWithinRadiusFetch(vehicleStatusCoordinateRequestDto.getLongitude(),
                 vehicleStatusCoordinateRequestDto.getLatitude(), vehicleStatusCoordinateRequestDto.getRadius());
 
+        Map<Long, Long> emergencyEventMap = getEmergencyEventMap(vehicleStatuses);
+
+        return vehicleStatuses
+                .stream()
+                .map( v -> {
+                    return insertEmergencyEventId(v, emergencyEventMap);
+                }).toList();
+    }
+
+    /* 전체 VehicleStatus 조회 */
+    public List<VehicleStatusDto> findAllVehicleStatus(String email) {
+        validateRole(email);
+
+        List<VehicleStatus> vehicleStatuses = vehicleStatusRepository.findAll();
+
+        Map<Long, Long> emergencyEventMap = getEmergencyEventMap(vehicleStatuses);
+
+        return vehicleStatuses
+                .stream()
+                .map( v -> {
+                    return insertEmergencyEventId(v, emergencyEventMap);
+                }).toList();
+    }
+
+    private Map<Long, Long> getEmergencyEventMap(List<VehicleStatus> vehicleStatuses) {
         // 응급 차량들의 vehicleId
         List<Long> emergencyVehicleIds = vehicleStatuses.stream().filter(VehicleStatus::isEmergencyVehicle).map(v -> v.getVehicle().getVehicleId()).toList();
-        System.out.println(emergencyVehicleIds);
 
         // 응급 상태인 응급 차량의 emergencyEventId 뽑아냄
         // key: vehicleId
@@ -69,12 +89,9 @@ public class VehicleStatusService {
             emergencyEventMap.put(e.getVehicle().getVehicleId(), e.getEmergencyEventId());
         });
 
-        return vehicleStatuses
-                .stream()
-                .map( v -> {
-                    return insertEmergencyEventId(v, emergencyEventMap);
-                }).toList();
+        return emergencyEventMap;
     }
+
 
     private VehicleStatusDto insertEmergencyEventId(VehicleStatus v, Map<Long, Long> emergencyEvents) {
         if (v.getVehicle() != null) {
@@ -140,12 +157,4 @@ public class VehicleStatusService {
 //                .stream().map(VehicleStatusDto::new)
 //                .toList();
 //    }
-
-    /* 전체 VehicleStatus 조회 */
-    public List<VehicleStatusDto> findAllVehicleStatus(String email) {
-        validateRole(email);
-        return vehicleStatusRepository.findAll()
-                .stream().map(VehicleStatusDto::new)
-                .toList();
-    }
 }
