@@ -60,6 +60,12 @@ public class WarnRecordService {
         return getWarnInfos(warnRecords);
     }
 
+    // 조건 없이 getWarnList 조회
+    public List<WarnInfo> getWarnList() {
+        List<WarnRecord> warnRecords = warnRecordRepository.findAll();
+        return getWarnInfos(warnRecords);
+    }
+
     // getWarnList with time and emergencyEventId and checkPointIndex
     public List<WarnInfo> getWarnList(Long emergencyEventId, Long checkPointIndex) {
         // TODO:
@@ -82,12 +88,6 @@ public class WarnRecordService {
                     log.info("해당 emergencyEventId가 존재하지 않음.");
                     return new IllegalArgumentException("해당 emergencyEventId가 존재하지 않습니다.");
                 });
-    }
-
-    // 조건 없이 getWarnList 조회
-    public List<WarnInfo> getWarnList() {
-        List<WarnRecord> warnRecords = warnRecordRepository.findAll();
-        return getWarnInfos(warnRecords);
     }
 
         private List<WarnInfo> getWarnInfos(List<WarnRecord> warnRecords) {
