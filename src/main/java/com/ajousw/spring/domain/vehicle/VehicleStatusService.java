@@ -133,10 +133,18 @@ public class VehicleStatusService {
         return result;
     }
 
+    /* 전체 active emergency vehicleStatus 조회 */
+//    public List<VehicleStatusDto> findAllActiveEmergencyVehicle(String email) {
+//        validateRole(email);
+//        return vehicleStatusRepository.findAllEmergencyVehicle()
+//                .stream().map(VehicleStatusDto::new)
+//                .toList();
+//    }
+
     /* 전체 VehicleStatus 조회 */
-    public List<VehicleStatusDto> findAllActiveEmergencyVehicle(String email) {
+    public List<VehicleStatusDto> findAllVehicleStatus(String email) {
         validateRole(email);
-        return vehicleStatusRepository.findAllEmergencyVehicle()
+        return vehicleStatusRepository.findAll()
                 .stream().map(VehicleStatusDto::new)
                 .toList();
     }
