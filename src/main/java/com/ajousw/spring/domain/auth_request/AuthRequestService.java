@@ -3,13 +3,12 @@ package com.ajousw.spring.domain.auth_request;
 import com.ajousw.spring.domain.auth_request.repository.AuthRequestRepository;
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.enums.Role;
-import com.ajousw.spring.web.controller.dto.auth.RequestEmergencyRoleDto;
+import com.ajousw.spring.web.controller.dto.auth.AuthRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -19,26 +18,19 @@ import java.util.List;
 public class AuthRequestService {
     private final AuthRequestRepository authRequestRepository;
 
-    public List<RequestEmergencyRoleDto> getRequestEmergencyRoleList(Member member) {
-        if (member.hasRole(Role.ROLE_ADMIN)) {
-            // admin 권한 있음
-            List<RequestEmergencyRoleDto> result = new ArrayList<RequestEmergencyRoleDto>();
-            authRequestRepository.findAll().stream()
-                    .forEach(v -> {
-                        result.add(new RequestEmergencyRoleDto(
-                                v.getUserId(),
-                                v.getCreatedDate()
-                        ));
-                    });
-            return result;
-        } else {
-            // admin 권한 없음
+    // TODO: 페이징 처리하기
+    public List<AuthRequestDto> getRequestEmergencyRoleList(Member member) {
+        if (!member.hasRole(Role.ROLE_ADMIN)) {
             log.info("ADMIN권한이 없는 사용자가 ADMIN API 요청함");
             throw new IllegalArgumentException("ADMIN 권한이 없습니다.");
         }
+
+        return authRequestRepository.findAllAndOrderById()
+                .stream().map(AuthRequestDto::new)
+                .toList();
     }
 
-    public void addRole(Member member) {
+    public void requestEmergencyRole(Member member) {
         // case1. 권한이 이미 있음.
         if (member.hasRole(Role.ROLE_EMERGENCY_VEHICLE)) {
             log.info("이미 emergency 권한이 있음.");
@@ -47,26 +39,40 @@ public class AuthRequestService {
         // case2. 권한이 없음
         // auth_request table에 추가해줌.
         // 이미 요청한 적 있는지 확인
-        if (authRequestRepository.existsByUserId(member.getId())) {
+        if (authRequestRepository.existsByMemberAndIsPending(member, true)) {
             log.info("이미 emergency 권한 요청함");
             throw new IllegalArgumentException("이미 권한을 요청하였습니다.");
         }
-        AuthRequest authRequest = new AuthRequest(member.getId());
+        AuthRequest authRequest = new AuthRequest(member, Role.ROLE_EMERGENCY_VEHICLE);
         authRequestRepository.save(authRequest);
     }
 
     public void rejectRole(Member member, Long targetId) {
         this.checkValidation(member, targetId);
-        authRequestRepository.deleteAuthRequestByUserId(targetId);
+        AuthRequest authRequest = getAuthRequestByIdAndValidate(targetId);
+        authRequest.rejectRole();
     }
+
 
     public void approveRole(Member member, Long targetId) {
         this.checkValidation(member, targetId);
+        AuthRequest authRequest = getAuthRequestByIdAndValidate(targetId);
+        authRequest.approveRole();
+        Member targetMember = authRequest.getMember();
+        targetMember.addRole(Role.ROLE_EMERGENCY_VEHICLE);
+    }
 
-        // 3. 테이블에 존재하면 승인
-        // 3-1. 테이블에서 삭제하고
-        // 3-2. Member 테이블에 ROLE_ADMIN 추가
-        authRequestRepository.deleteAuthRequestByUserId(targetId);
+    private AuthRequest getAuthRequestByIdAndValidate(Long targetId) {
+        AuthRequest authRequest = authRequestRepository.findById(targetId).orElseThrow(() -> {
+            log.info("존재하지 않는 권한 상승 요청 ID");
+            throw new IllegalArgumentException("존재하지 않는 권한 상승 요청 ID 입니다.");
+        });
+
+        if (!authRequest.isPending()) {
+            throw new IllegalArgumentException("이미 처리된 권한 상승 요청입니다.");
+        }
+
+        return authRequest;
     }
 
     private void checkValidation(Member member, Long targetId) {
@@ -76,10 +82,10 @@ public class AuthRequestService {
             throw new IllegalArgumentException("관리자 권한이 없습니다.");
         }
 
-        // 2. targetId가 테이블에 존재하는지 확인
-        if (!authRequestRepository.existsByUserId(targetId)) {
-            log.info("해당 사용자가 권한 요청을 한 기록이 없음");
-            throw new IllegalArgumentException("해당 사용자가 권한 요청을 한 기록이 없습니다.");
-        }
+//        // 2. targetId가 테이블에 존재하는지 확인
+//        if (!authRequestRepository.existsByMemberAndIsPending(member, true)) {
+//            log.info("해당 사용자가 권한 요청을 한 기록이 없음");
+//            throw new IllegalArgumentException("해당 사용자가 권한 요청을 한 기록이 없습니다.");
+//        }
     }
 }

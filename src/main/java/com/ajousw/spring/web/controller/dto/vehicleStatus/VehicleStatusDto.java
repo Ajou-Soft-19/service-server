@@ -18,6 +18,7 @@ public class VehicleStatusDto {
     private Double meterPerSec;
     private Double direction;
 
+
     // vehicle info
     private VehicleDto vehicleInfo;
 

@@ -4,26 +4,22 @@ import com.ajousw.spring.domain.member.enums.LoginType;
 import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 
 
 @Entity
 @Getter
+@DynamicUpdate
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends BaseTimeEntity {
 
@@ -65,12 +61,31 @@ public class Member extends BaseTimeEntity {
     }
 
     public void addRole(Role role) {
-        this.roles = this.roles + "," + role.getRoleName();
+        List<String> parsedRoles = Arrays.stream(roles.split(",")).toList();
+
+        if (parsedRoles.contains(role.getRoleName())) {
+            return;
+        }
+
+        List<String> newRoles = new ArrayList<>(parsedRoles);
+        newRoles.add(role.getRoleName());
+        newRoles.sort(Comparator.naturalOrder());
+
+        this.roles = String.join(",", newRoles);
     }
 
     public void removeRole(Role role) {
-        ArrayList<String> parsedRoles = new ArrayList<>(Arrays.asList(this.roles.split(",")));
-        parsedRoles.remove(role.getRoleName());
-        this.roles = String.join(",", parsedRoles);
+        List<String> parsedRoles = Arrays.stream(roles.split(",")).toList();
+
+        if (!parsedRoles.contains(role.getRoleName())) {
+            return;
+        }
+
+        List<String> newRoles = new ArrayList<>(parsedRoles);
+        newRoles.remove(role.getRoleName());
+        newRoles.sort(Comparator.naturalOrder());
+
+        this.roles = String.join(",", newRoles);
     }
+    
 }

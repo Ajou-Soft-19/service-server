@@ -5,7 +5,7 @@ import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.MemberService;
 import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.member.enums.Role;
-import com.ajousw.spring.web.controller.dto.auth.RequestEmergencyRoleDto;
+import com.ajousw.spring.web.controller.dto.auth.AuthRequestDto;
 import com.ajousw.spring.web.controller.dto.member.EmergencyMemberDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import lombok.RequiredArgsConstructor;
@@ -41,21 +41,21 @@ public class RoleController {
         return new ApiResponseJson(HttpStatus.OK, member.getRoles());
     }
 
+    /* emergency 권한 요청 */
+    @PostMapping("")
+    public ApiResponseJson addEmergencyRole(@AuthenticationPrincipal UserPrinciple user) {
+        Member member = memberService.findByEmail(user.getEmail());
+        authRequestService.requestEmergencyRole(member);
+        return new ApiResponseJson(HttpStatus.OK, "success");
+    }
+
     /* emergency 권한 요청한 유저 리스트 */
     @GetMapping("/request")
     public ApiResponseJson getRequestEmergencyRoleList(@AuthenticationPrincipal UserPrinciple user) {
         /* 요청자 admin 권한 있는지 확인 */
         Member member = memberService.findByEmail(user.getEmail());
-        List<RequestEmergencyRoleDto> result = authRequestService.getRequestEmergencyRoleList(member);
+        List<AuthRequestDto> result = authRequestService.getRequestEmergencyRoleList(member);
         return new ApiResponseJson(HttpStatus.OK, result);
-    }
-
-    /* emergency 권한 요청 */
-    @PostMapping("")
-    public ApiResponseJson addEmergencyRole(@AuthenticationPrincipal UserPrinciple user) {
-        Member member = memberService.findByEmail(user.getEmail());
-        authRequestService.addRole(member);
-        return new ApiResponseJson(HttpStatus.OK, "success");
     }
 
     // admin이 권한 요청 거절
@@ -75,8 +75,7 @@ public class RoleController {
             @PathVariable Long id) {
         Member member = memberService.findByEmail(user.getEmail());
         authRequestService.approveRole(member, id);
-        String result = memberService.approveRole(user.getEmail(), id);
-        return new ApiResponseJson(HttpStatus.OK, result);
+        return new ApiResponseJson(HttpStatus.OK, "Added Role");
     }
 
     // admin이 특정 유저의 emergency 권한을 삭제
@@ -87,4 +86,5 @@ public class RoleController {
         Member member = memberService.findByEmail(user.getEmail());
         String result = memberService.removeRole(member, id, Role.ROLE_EMERGENCY_VEHICLE);
         return new ApiResponseJson(HttpStatus.OK, result);
-    }}
+    }
+}
