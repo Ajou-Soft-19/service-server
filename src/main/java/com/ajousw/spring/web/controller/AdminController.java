@@ -34,7 +34,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/admin")
 public class AdminController {
     private final VehicleStatusService vehicleStatusService;
-    private final VehicleRepository vehicleRepository;
     private final WarnRecordService warnRecordService;
     private final NavigationPathService navigationPathService;
 
@@ -73,14 +72,14 @@ public class AdminController {
     }
 
     /* 주행중인 특정 응급차량 조회 */
-    @GetMapping("/monit/vehicle-status/emergency")
-    public ApiResponseJson getNavigationPathIdByVehicleStatusId(
-            @Valid @RequestParam(value = "vehicleStatusId") String vehicleStatusId,
-            @AuthenticationPrincipal UserPrinciple user) {
-        VehicleStatusNavigationPathDto result = vehicleStatusService.getVehicleStatusEmergencyOne(user.getEmail(),
-                vehicleStatusId);
-        return new ApiResponseJson(HttpStatus.OK, result);
-    }
+//    @GetMapping("/monit/vehicle-status/emergency")
+//    public ApiResponseJson getNavigationPathIdByVehicleStatusId(
+//            @Valid @RequestParam(value = "vehicleStatusId") String vehicleStatusId,
+//            @AuthenticationPrincipal UserPrinciple user) {
+//        VehicleStatusNavigationPathDto result = vehicleStatusService.getVehicleStatusEmergencyOne(user.getEmail(),
+//                vehicleStatusId);
+//        return new ApiResponseJson(HttpStatus.OK, result);
+//    }
 
     /* 응급 상황인 차량의 경로 조회 */
     @PostMapping("/monit/vehicle-status/emergency/route")
@@ -100,7 +99,7 @@ public class AdminController {
         return new ApiResponseJson(HttpStatus.OK, Map.of("currentPathPoint", currentPathPoint));
     }
 
-    /* 모든 응급 차량의 경로 조회 */
+    /* 모든 응급 차량의 경로 조회 - 경로 포함*/
     @GetMapping("/monit/vehicle-status/emergency/all")
     public ApiResponseJson getNavigationPathAll(@AuthenticationPrincipal UserPrinciple user) {
         List<VehicleStatusNavigationPathDto> result = vehicleStatusService.getVehicleStatusAllExceptEmergency(
