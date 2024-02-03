@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -29,39 +30,80 @@ public class WarnRecordService {
     private final EmergencyEventRepository emergencyEventRepository;
     private final MemberJpaRepository memberJpaRepository;
 
-    public List<WarnInfo> getWarmListWithTimeAfterAndEmergencyEventId(String email, WarnListEmergencyRequestDto warnListEmergencyRequestDto) {
+    // Long to LocalDateTime
+    private LocalDateTime longToLocalDateTime(Long time) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault());
+    }
+
+    public List<WarnInfo> getWarnList(String email, WarnListEmergencyRequestDto warnListEmergencyRequestDto) {
         validateAdminRole(email);
-        EmergencyEvent emergencyEvent = emergencyEventRepository.findOneByEmergencyEventId(warnListEmergencyRequestDto.getEmergencyEventId())
+        if (warnListEmergencyRequestDto.getCheckPointIndex() == null && warnListEmergencyRequestDto.getEmergencyEventId() == null) {
+            return getWarnList();
+        } else if(warnListEmergencyRequestDto.getCheckPointIndex() == null) {
+            return getWarnList(warnListEmergencyRequestDto.getEmergencyEventId());
+        } else {
+            return getWarnList(warnListEmergencyRequestDto.getEmergencyEventId(), warnListEmergencyRequestDto.getCheckPointIndex());
+        }
+    }
+
+    // getWarnList with time
+//    public List<WarnInfo> getWarnList(Long timeAfter) {
+//        // 시작 시간을 기준으로 어떤 차량이 경고를 받았는지 조회할 때
+//        List<WarnRecord> warnRecords = warnRecordRepository.findAllAfterTime(longToLocalDateTime(timeAfter));
+//        return getWarnInfos(warnRecords);
+//    }
+
+    // getWarnList with time and emergencyEventId
+    public List<WarnInfo> getWarnList(Long emergencyEventId) {
+        isEmergencyEventById(emergencyEventId);
+        List<WarnRecord> warnRecords = warnRecordRepository.findAllByEmergencyEventId(emergencyEventId);
+        return getWarnInfos(warnRecords);
+    }
+
+    // getWarnList with time and emergencyEventId and checkPointIndex
+    public List<WarnInfo> getWarnList(Long emergencyEventId, Long checkPointIndex) {
+        // TODO:
+        isEmergencyEventById(emergencyEventId);
+        List<WarnRecord> result = warnRecordRepository.findAllByEmergencyEventIdAndCheckPointIndex(emergencyEventId, checkPointIndex);
+        return getWarnInfos(result);
+    }
+
+    private void isEmergencyEventById(Long emergencyEventId) {
+        if (!emergencyEventRepository.existsByEmergencyEventId(emergencyEventId)) {
+            log.info("Not Exist EmergencyEvent");
+            throw new IllegalArgumentException("Not Exist EmergencyEvent");
+        }
+    }
+
+    // emergencyEventId로 EmergencyEvent 조회
+    private EmergencyEvent getEmergencyEventById(Long emergencyEventId) {
+        return emergencyEventRepository.findOneByEmergencyEventId(emergencyEventId)
                 .orElseThrow(() -> {
                     log.info("해당 emergencyEventId가 존재하지 않음.");
                     return new IllegalArgumentException("해당 emergencyEventId가 존재하지 않습니다.");
                 });
-
-        Map<Long, WarnInfo> result = new HashMap<Long, WarnInfo>();
-        List<WarnRecord> warnRecords = warnRecordRepository.findAllByTimeAfterAndEmergencyEvent(LocalDateTime.ofInstant(Instant.ofEpochMilli(warnListEmergencyRequestDto.getTimeAfter()), ZoneId.systemDefault()), emergencyEvent);
-        return getWarnInfos(result, warnRecords);
     }
 
-    private List<WarnInfo> getWarnInfos(Map<Long, WarnInfo> result, List<WarnRecord> warnRecords) {
-        for (WarnRecord v : warnRecords) {
-            if (result.containsKey(v.getWarnRecordId().getCheckPointIndex())) {
-                WarnInfo warnInfo = result.get(v.getWarnRecordId().getCheckPointIndex());
+    // 조건 없이 getWarnList 조회
+    public List<WarnInfo> getWarnList() {
+        List<WarnRecord> warnRecords = warnRecordRepository.findAll();
+        return getWarnInfos(warnRecords);
+    }
+
+        private List<WarnInfo> getWarnInfos(List<WarnRecord> warnRecords) {
+            Map<Long, WarnInfo> warnInfoMap = new HashMap<Long, WarnInfo>();
+            for (WarnRecord v : warnRecords) {
+            if (warnInfoMap.containsKey(v.getWarnRecordId().getCheckPointIndex())) {
+                WarnInfo warnInfo = warnInfoMap.get(v.getWarnRecordId().getCheckPointIndex());
                 warnInfo.getSessionIds().add(v.getWarnRecordId().getSessionId());
-                result.put(v.getWarnRecordId().getCheckPointIndex(), warnInfo);
+                warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(), warnInfo);
             } else {
-                result.put(v.getWarnRecordId().getCheckPointIndex(), new WarnInfo(v.getWarnRecordId().getCheckPointIndex(), v.getCreatedDate(), new ArrayList<String>(Collections.singleton(v.getWarnRecordId().getSessionId()))));
+                warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(), new WarnInfo(v.getWarnRecordId().getCheckPointIndex(), v.getCreatedDate(), new ArrayList<String>(Collections.singleton(v.getWarnRecordId().getSessionId()))));
             }
         }
-        return result.values().stream().toList();
+        return warnInfoMap.values().stream().sorted(Comparator.comparing(WarnInfo::getCheckPointIndex)).toList();
     }
 
-    // 시작 시간을 기준으로 어떤 차량이 경고를 받았는지 조회할 때
-    public List<WarnInfo> getWarmListWithTimeAfter(String email, Long timeAfter) {
-        validateAdminRole(email);
-        Map<Long, WarnInfo> result = new HashMap<Long, WarnInfo>();
-        List<WarnRecord> warnRecords = warnRecordRepository.findAllAfterTime(LocalDateTime.ofInstant(Instant.ofEpochMilli(timeAfter), ZoneId.systemDefault()));
-        return getWarnInfos(result, warnRecords);
-    }
 
     private void validateAdminRole(String email) {
         Member member = memberJpaRepository.findByEmail(email)
