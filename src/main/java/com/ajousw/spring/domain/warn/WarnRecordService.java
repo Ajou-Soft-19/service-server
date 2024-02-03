@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -42,17 +43,17 @@ public class WarnRecordService {
         return getWarnInfos(result, warnRecords);
     }
 
-    private List<WarnInfo> getWarnInfos(Map<Long, WarnInfo> result, List<WarnRecord> warnRecords) {
+    private List<WarnInfo> getWarnInfos(Map<Long, WarnInfo> warnInfoMap, List<WarnRecord> warnRecords) {
         for (WarnRecord v : warnRecords) {
-            if (result.containsKey(v.getWarnRecordId().getCheckPointIndex())) {
-                WarnInfo warnInfo = result.get(v.getWarnRecordId().getCheckPointIndex());
+            if (warnInfoMap.containsKey(v.getWarnRecordId().getCheckPointIndex())) {
+                WarnInfo warnInfo = warnInfoMap.get(v.getWarnRecordId().getCheckPointIndex());
                 warnInfo.getSessionIds().add(v.getWarnRecordId().getSessionId());
-                result.put(v.getWarnRecordId().getCheckPointIndex(), warnInfo);
+                warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(), warnInfo);
             } else {
-                result.put(v.getWarnRecordId().getCheckPointIndex(), new WarnInfo(v.getWarnRecordId().getCheckPointIndex(), v.getCreatedDate(), new ArrayList<String>(Collections.singleton(v.getWarnRecordId().getSessionId()))));
+                warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(), new WarnInfo(v.getWarnRecordId().getCheckPointIndex(), v.getCreatedDate(), new ArrayList<String>(Collections.singleton(v.getWarnRecordId().getSessionId()))));
             }
         }
-        return result.values().stream().toList();
+        return warnInfoMap.values().stream().sorted(Comparator.comparing(WarnInfo::getCheckPointIndex)).toList();
     }
 
     // 시작 시간을 기준으로 어떤 차량이 경고를 받았는지 조회할 때
