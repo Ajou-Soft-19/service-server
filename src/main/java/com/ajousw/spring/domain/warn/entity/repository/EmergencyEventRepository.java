@@ -12,6 +12,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface EmergencyEventRepository extends JpaRepository<EmergencyEvent, Long> {
 
+    boolean existsByEmergencyEventId(Long emergencyEventId);
+
     @Query("select ee from EmergencyEvent ee where ee.vehicle.vehicleId in :vehicleIds and ee.isActive = true")
     List<EmergencyEvent> findEmergencyEventIdByVehicle(@Param("vehicleIds") List<Long> vehicleIds);
 

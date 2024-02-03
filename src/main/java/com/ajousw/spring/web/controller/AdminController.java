@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
@@ -36,19 +35,18 @@ public class AdminController {
     private final NavigationPathService navigationPathService;
 
     /* 경고를 받은 차량 조회 - 전체 */
-    @PostMapping("/monit/warn-list/all")
-    public ApiResponseJson getVehicleWarmList(@AuthenticationPrincipal UserPrinciple user,
-                                              @RequestBody WarnListRequestDto warnListRequestDto) {
-        List<WarnInfo> result = warnRecordService.getWarmListWithTimeAfter(user.getEmail(),
-                warnListRequestDto.getTimeAfter());
-        return new ApiResponseJson(HttpStatus.OK, result);
-    }
+//    @PostMapping("/monit/warn-list/all")
+//    public ApiResponseJson getVehicleWarmList(@AuthenticationPrincipal UserPrinciple user,
+//                                              @RequestBody WarnListRequestDto warnListRequestDto) {
+//        List<WarnInfo> result = warnRecordService.getWarnList(user.getEmail(), warnListRequestDto);
+//        return new ApiResponseJson(HttpStatus.OK, result);
+//    }
 
     /* 경고를 받은 차량 조회 - emergency_event_id 기준 */
     @PostMapping("/monit/warn-list")
     public ApiResponseJson getVehicleWarnListWithEmergencyEventId(@AuthenticationPrincipal UserPrinciple user,
                                                                   @RequestBody WarnListEmergencyRequestDto warnListEmergencyRequestDto) {
-        List<WarnInfo> result = warnRecordService.getWarmListWithTimeAfterAndEmergencyEventId(user.getEmail(),
+        List<WarnInfo> result = warnRecordService.getWarnList(user.getEmail(),
                 warnListEmergencyRequestDto);
         return new ApiResponseJson(HttpStatus.OK, result);
     }
