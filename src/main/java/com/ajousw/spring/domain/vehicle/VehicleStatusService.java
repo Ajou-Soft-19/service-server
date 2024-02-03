@@ -148,20 +148,4 @@ public class VehicleStatusService {
                 .stream().map(VehicleStatusDto::new)
                 .toList();
     }
-
-    // todo: mock data 추가용으로 삭제 예정
-    public void addVehicleStatus(Vehicle vehicle) {
-        Coordinate coordinate = new Coordinate(37.447135, 127.167428);
-        GeometryFactory gf = new GeometryFactory();
-        VehicleStatus data = new VehicleStatus(
-                "1",
-                vehicle,
-                true,
-                gf.createPoint(coordinate),
-                1.0,
-                1.0,
-                LocalDateTime.now()
-        );
-        vehicleStatusRepository.save(data);
-    }
 }
