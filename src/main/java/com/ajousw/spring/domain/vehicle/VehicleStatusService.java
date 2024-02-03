@@ -66,10 +66,13 @@ public class VehicleStatusService {
         validateRole(email);
 
         List<VehicleStatus> vehicleStatuses = vehicleStatusRepository.findAll();
+        List<VehicleStatus> vehicleStatusesWithOutNull = vehicleStatuses.stream()
+                .filter(vehicleStatus -> vehicleStatus.getCoordinate() != null)
+                .toList();
 
-        Map<Long, Long> emergencyEventMap = getEmergencyEventMap(vehicleStatuses);
+        Map<Long, Long> emergencyEventMap = getEmergencyEventMap(vehicleStatusesWithOutNull);
 
-        return vehicleStatuses
+        return vehicleStatusesWithOutNull
                 .stream()
                 .map( v -> {
                     return insertEmergencyEventId(v, emergencyEventMap);
