@@ -7,6 +7,7 @@ public enum VehicleType {
     LARGE_CAR("LARGE_CAR", "3종 대형차"),
     LARGE_TRUCK("LARGE_TRUCK", "4종 대형화물차"),
     SPECIAL_TRUCK("SPECIAL_TRUCK", "5종 특수화물차"),
+    AMBULANCE("AMBULANCE", "구급차"),
     FIRE_TRUCK_MEDIUM("FIRE_TRUCK_MEDIUM", "소방차 중형"),
     FIRE_TRUCK_LARGE("FIRE_TRUCK_LARGE", "소방차 대형");
 
