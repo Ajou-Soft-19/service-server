@@ -4,12 +4,14 @@ import com.ajousw.spring.domain.auth_request.repository.AuthRequestRepository;
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.web.controller.dto.auth.AuthRequestDto;
+import com.ajousw.spring.web.controller.dto.auth.AuthResultDto;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Slf4j
 @Service
@@ -30,7 +32,7 @@ public class AuthRequestService {
                 .toList();
     }
 
-    public void requestEmergencyRole(Member member) {
+    public Long requestEmergencyRole(Member member) {
         // case1. 권한이 이미 있음.
         if (member.hasRole(Role.ROLE_EMERGENCY_VEHICLE)) {
             log.info("이미 emergency 권한이 있음.");
@@ -39,12 +41,34 @@ public class AuthRequestService {
         // case2. 권한이 없음
         // auth_request table에 추가해줌.
         // 이미 요청한 적 있는지 확인
-        if (authRequestRepository.existsByMemberAndIsPending(member, true)) {
+        Optional<Long> optionalAuthRequest = authRequestRepository.findByMemberAndRoleTypeAndIsPending(
+                member, Role.ROLE_EMERGENCY_VEHICLE);
+
+        if (optionalAuthRequest.isPresent()) {
             log.info("이미 emergency 권한 요청함");
-            throw new IllegalArgumentException("이미 권한을 요청하였습니다.");
+            return optionalAuthRequest.get();
         }
         AuthRequest authRequest = new AuthRequest(member, Role.ROLE_EMERGENCY_VEHICLE);
         authRequestRepository.save(authRequest);
+        return authRequest.getId();
+    }
+
+    public AuthResultDto checkRoleApproved(Member member, Long requestId) {
+        AuthRequest authRequest = findAuthRequestById(requestId);
+
+        if (!Objects.equals(authRequest.getMember().getId(), member.getId())) {
+            throw new IllegalArgumentException("Wrong RequestId");
+        }
+
+        if (authRequest.isPending()) {
+            return new AuthResultDto(false, "Request is Not Approved");
+        }
+
+        if (!authRequest.isApproved()) {
+            return new AuthResultDto(false, "Request is Rejected");
+        }
+
+        return new AuthResultDto(true, "Request is Approved");
     }
 
     public void rejectRole(Member member, Long targetId) {
@@ -63,16 +87,20 @@ public class AuthRequestService {
     }
 
     private AuthRequest getAuthRequestByIdAndValidate(Long targetId) {
-        AuthRequest authRequest = authRequestRepository.findById(targetId).orElseThrow(() -> {
-            log.info("존재하지 않는 권한 상승 요청 ID");
-            throw new IllegalArgumentException("존재하지 않는 권한 상승 요청 ID 입니다.");
-        });
+        AuthRequest authRequest = findAuthRequestById(targetId);
 
         if (!authRequest.isPending()) {
             throw new IllegalArgumentException("이미 처리된 권한 상승 요청입니다.");
         }
 
         return authRequest;
+    }
+
+    private AuthRequest findAuthRequestById(Long targetId) {
+        return authRequestRepository.findById(targetId).orElseThrow(() -> {
+            log.info("존재하지 않는 권한 상승 요청 ID");
+            throw new IllegalArgumentException("존재하지 않는 권한 상승 요청 ID 입니다.");
+        });
     }
 
     private void checkValidation(Member member, Long targetId) {

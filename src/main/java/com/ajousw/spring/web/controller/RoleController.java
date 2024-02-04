@@ -6,15 +6,21 @@ import com.ajousw.spring.domain.member.MemberService;
 import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.web.controller.dto.auth.AuthRequestDto;
+import com.ajousw.spring.web.controller.dto.auth.AuthResultDto;
 import com.ajousw.spring.web.controller.dto.member.EmergencyMemberDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
@@ -23,6 +29,16 @@ import java.util.List;
 public class RoleController {
     private final MemberService memberService;
     private final AuthRequestService authRequestService;
+
+    // TODO: API URL 정리 + 트랜잭션....?
+    // TODO: 이 함수 삭제해주세용~
+    /* test용 admin 권한 등록 api */
+    @PostMapping("/admin")
+    public ApiResponseJson requestAdminRole(@AuthenticationPrincipal UserPrinciple user) {
+        Member member = memberService.findByEmail(user.getEmail());
+        memberService.addRole(member.getId(), Role.ROLE_ADMIN);
+        return new ApiResponseJson(HttpStatus.OK, member.getRoles());
+    }
 
     /* 응급 차량 권한 가지고 있는 유저 리스트 조회 */
     @GetMapping("/emergency")
@@ -33,20 +49,21 @@ public class RoleController {
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
-    /* test용 admin 권한 등록 api */
-    @PostMapping("/admin")
-    public ApiResponseJson requestAdminRole(@AuthenticationPrincipal UserPrinciple user) {
-        Member member = memberService.findByEmail(user.getEmail());
-        memberService.addRole(member.getId(), Role.ROLE_ADMIN);
-        return new ApiResponseJson(HttpStatus.OK, member.getRoles());
-    }
-
     /* emergency 권한 요청 */
     @PostMapping("")
     public ApiResponseJson addEmergencyRole(@AuthenticationPrincipal UserPrinciple user) {
         Member member = memberService.findByEmail(user.getEmail());
-        authRequestService.requestEmergencyRole(member);
-        return new ApiResponseJson(HttpStatus.OK, "success");
+        Long requestId = authRequestService.requestEmergencyRole(member);
+        return new ApiResponseJson(HttpStatus.OK, Map.of("requestId", requestId));
+    }
+
+    @GetMapping("/check-request")
+    public ApiResponseJson checkRoleApproved(@AuthenticationPrincipal UserPrinciple user,
+                                             @RequestParam(name = "requestId", defaultValue = "-1") Long requestId) {
+        Member member = memberService.findByEmail(user.getEmail());
+        AuthResultDto authResultDto = authRequestService.checkRoleApproved(member, requestId);
+
+        return new ApiResponseJson(HttpStatus.OK, authResultDto);
     }
 
     /* emergency 권한 요청한 유저 리스트 */
