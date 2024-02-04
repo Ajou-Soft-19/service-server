@@ -142,6 +142,7 @@ public class EmergencyNavigationService {
                 checkPoints);
     }
 
+    // TODO: 다음 체크포인트까지의 경로를 보장하기
     private Optional<CheckPointDto> alertNextCheckPointIfPassedCheckPoint(NavigationPath navigationPath,
                                                                           Long emergencyEventId,
                                                                           Long oldPathIdx,
@@ -157,7 +158,7 @@ public class EmergencyNavigationService {
 
         CheckPoint nextCheckPoint = nextCheckPointOptional.get();
         List<PathPointDto> filteredPathPoints = navigationPath.getPathPoints().stream()
-                .filter(p -> filterPathInCheckPoint(nextCheckPoint, p))
+                .filter(p -> filterPathInCheckPoint(curPathIdx, nextCheckPoint, p))
                 .map(PathPointDto::new).toList();
 
         alertService.alertNextCheckPoint(navigationPath, emergencyEventId, filteredPathPoints, nextCheckPoint, duration,
@@ -192,11 +193,15 @@ public class EmergencyNavigationService {
         return tableQueryResultDto.getDuration();
     }
 
-    private boolean filterPathInCheckPoint(CheckPoint checkPoint, PathPoint pathPoint) {
+    private boolean filterPathInCheckPoint(Long curPathIdx, CheckPoint nextCheckPoint, PathPoint targetPathPoint) {
+        if (curPathIdx <= targetPathPoint.getPointIndex()
+                && targetPathPoint.getPointIndex() <= nextCheckPoint.getPointIndex()) {
+            return true;
+        }
         MapLocation checkPointLocation
-                = new MapLocation(checkPoint.getCoordinate().getY(), checkPoint.getCoordinate().getX());
+                = new MapLocation(nextCheckPoint.getCoordinate().getY(), nextCheckPoint.getCoordinate().getX());
         MapLocation pathPointLocation
-                = new MapLocation(pathPoint.getCoordinate().getY(), pathPoint.getCoordinate().getX());
+                = new MapLocation(targetPathPoint.getCoordinate().getY(), targetPathPoint.getCoordinate().getX());
         double distance = CoordinateUtil.calculateDistance(checkPointLocation, pathPointLocation);
 
         return distance <= checkPointRadius;

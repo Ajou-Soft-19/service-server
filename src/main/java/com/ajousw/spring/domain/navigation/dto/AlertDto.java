@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class AlertDto {
 
-    private String messageType;
-
     private Long emergencyEventId;
 
     private Long checkPointId;
@@ -26,7 +24,6 @@ public class AlertDto {
 
     public AlertDto(Long emergencyEventId, Long checkPointId, String licenseNumber, VehicleType vehicleType,
                     Long currentPathPoint, List<PathPointDto> pathPoints) {
-        this.messageType = "ALERT";
         this.emergencyEventId = emergencyEventId;
         this.checkPointId = checkPointId;
         this.licenseNumber = licenseNumber;
