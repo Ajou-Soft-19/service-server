@@ -56,6 +56,9 @@ public class EmergencyNavigationService {
     @Value("${emergency.check-point-distance}")
     private double checkPointDistance;
 
+    @Value("${emergency.check-point-radius}")
+    private double checkPointRadius;
+
     @Value("${emergency.filter-radius}")
     private Double filterRadius;
 
@@ -126,10 +129,8 @@ public class EmergencyNavigationService {
         navigationPathRepository.flush();
     }
 
-    public Optional<CheckPointDto> updateCurrentPathPoint(String email, Long naviPathId, Long curPathIdx) {
-        Member member = findMemberByEmail(email);
+    public Optional<CheckPointDto> updateCurrentPathPoint(Long naviPathId, Long emergencyEventId, Long curPathIdx) {
         NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
-        checkPathOwner(member, navigationPath);
 
         Long oldPathIdx = navigationPath.getCurrentPathPoint();
         List<CheckPoint> checkPoints = navigationPath.getCheckPoints();
@@ -137,12 +138,14 @@ public class EmergencyNavigationService {
         log.info("updated pathPoint for vehicleId {} naviPathId {} pathIndex {}",
                 navigationPath.getVehicle().getVehicleId(), navigationPath.getNaviPathId(), curPathIdx);
 
-        return alertNextCheckPointIfPassedCheckPoint(curPathIdx, navigationPath, oldPathIdx, checkPoints);
+        return alertNextCheckPointIfPassedCheckPoint(navigationPath, emergencyEventId, oldPathIdx, curPathIdx,
+                checkPoints);
     }
 
-    private Optional<CheckPointDto> alertNextCheckPointIfPassedCheckPoint(Long curPathIdx,
-                                                                          NavigationPath navigationPath,
+    private Optional<CheckPointDto> alertNextCheckPointIfPassedCheckPoint(NavigationPath navigationPath,
+                                                                          Long emergencyEventId,
                                                                           Long oldPathIdx,
+                                                                          Long curPathIdx,
                                                                           List<CheckPoint> checkPoints) {
         Optional<CheckPoint> nextCheckPointOptional = findNextCheckPoint(curPathIdx, oldPathIdx,
                 checkPoints);
@@ -157,7 +160,7 @@ public class EmergencyNavigationService {
                 .filter(p -> filterPathInCheckPoint(nextCheckPoint, p))
                 .map(PathPointDto::new).toList();
 
-        alertService.alertNextCheckPoint(navigationPath, filteredPathPoints, nextCheckPoint, duration,
+        alertService.alertNextCheckPoint(navigationPath, emergencyEventId, filteredPathPoints, nextCheckPoint, duration,
                 navigationPath.getVehicle().getLicenceNumber(), navigationPath.getVehicle().getVehicleType());
 
         return Optional.of(new CheckPointDto(nextCheckPoint, duration));
@@ -196,7 +199,7 @@ public class EmergencyNavigationService {
                 = new MapLocation(pathPoint.getCoordinate().getY(), pathPoint.getCoordinate().getX());
         double distance = CoordinateUtil.calculateDistance(checkPointLocation, pathPointLocation);
 
-        return distance <= checkPointDistance;
+        return distance <= checkPointRadius;
     }
 
     private void checkVehicleOwner(Member member, Vehicle vehicle) {

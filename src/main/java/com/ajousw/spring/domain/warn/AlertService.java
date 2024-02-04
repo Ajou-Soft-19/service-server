@@ -36,7 +36,8 @@ public class AlertService {
     // TODO: Function X 구현
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void alertNextCheckPoint(NavigationPath emergencyPath, List<PathPointDto> filteredPathPoints,
+    public void alertNextCheckPoint(NavigationPath emergencyPath, Long emergencyEventId,
+                                    List<PathPointDto> filteredPathPoints,
                                     CheckPoint nextCheckPoint, double duration, String licenceNumber,
                                     VehicleType vehicleType) {
 //        List<VehicleStatus> targetVehicleStatus = vehicleStatusRepository.findAllWithinRadius(
@@ -63,7 +64,7 @@ public class AlertService {
         Set<String> targetSession = targetVehicleStatus.stream().map(VehicleStatus::getVehicleStatusId).collect(
                 Collectors.toSet());
 
-        AlertDto alertDto = new AlertDto(licenceNumber, vehicleType,
+        AlertDto alertDto = new AlertDto(emergencyEventId, nextCheckPoint.getPointIndex(), licenceNumber, vehicleType,
                 emergencyPath.getCurrentPathPoint(), filteredPathPoints);
 
         redisMessagePublisher.publishAlertMessageToSocket(new BroadcastDto(targetSession, alertDto));
