@@ -29,7 +29,7 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtFilter jwtFilter;
-    private final String[] adminUrl = {"/admin/**"};
+    private final String[] adminUrl = {"/admin/**", "/api/admin"};
     private final String[] emergencyUrl = {"/api/emergency/**"};
     private final String[] permitAllUrl = {"/error", "/api/navi/route"};
     private final String[] anonymousUrl = {"/anonymous"};

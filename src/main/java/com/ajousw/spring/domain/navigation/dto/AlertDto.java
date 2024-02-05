@@ -1,6 +1,6 @@
 package com.ajousw.spring.domain.navigation.dto;
 
-import com.ajousw.spring.domain.vehicle.VehicleType;
+import com.ajousw.spring.domain.vehicle.entity.VehicleType;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.Data;

@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -39,6 +38,7 @@ public class VehicleStatusService {
                     log.info("해당 이메일을 가진 유저가 존재하지 않음.");
                     return new IllegalArgumentException("해당 이메일을 가진 유저가 존재하지 않습니다.");
                 });
+
         if (!member.hasRole(Role.ROLE_ADMIN)) {
             log.info("관리자 권한을 가지고 있지 않음.");
             throw new IllegalArgumentException("관리자 권한을 가지고 있지 않습니다.");
@@ -49,16 +49,15 @@ public class VehicleStatusService {
     public List<VehicleStatusDto> getVehicleStatusWithCoordinate(String email,
                                                                  VehicleStatusCoordinateRequestDto vehicleStatusCoordinateRequestDto) {
         validateRole(email);
-        List<VehicleStatus> vehicleStatuses = vehicleStatusRepository.findAllWithinRadiusFetch(vehicleStatusCoordinateRequestDto.getLongitude(),
+        List<VehicleStatus> vehicleStatuses = vehicleStatusRepository.findAllWithinRadiusFetch(
+                vehicleStatusCoordinateRequestDto.getLongitude(),
                 vehicleStatusCoordinateRequestDto.getLatitude(), vehicleStatusCoordinateRequestDto.getRadius());
 
         Map<Long, Long> emergencyEventMap = getEmergencyEventMap(vehicleStatuses);
 
-        return vehicleStatuses
-                .stream()
-                .map( v -> {
-                    return insertEmergencyEventId(v, emergencyEventMap);
-                }).toList();
+        return vehicleStatuses.stream()
+                .map(v -> insertEmergencyEventId(v, emergencyEventMap))
+                .toList();
     }
 
     /* 전체 VehicleStatus 조회 */
@@ -72,21 +71,21 @@ public class VehicleStatusService {
 
         Map<Long, Long> emergencyEventMap = getEmergencyEventMap(vehicleStatusesWithOutNull);
 
-        return vehicleStatusesWithOutNull
-                .stream()
-                .map( v -> {
-                    return insertEmergencyEventId(v, emergencyEventMap);
-                }).toList();
+        return vehicleStatusesWithOutNull.stream()
+                .map(v -> insertEmergencyEventId(v, emergencyEventMap))
+                .toList();
     }
 
     private Map<Long, Long> getEmergencyEventMap(List<VehicleStatus> vehicleStatuses) {
         // 응급 차량들의 vehicleId
-        List<Long> emergencyVehicleIds = vehicleStatuses.stream().filter(VehicleStatus::isEmergencyVehicle).map(v -> v.getVehicle().getVehicleId()).toList();
+        List<Long> emergencyVehicleIds = vehicleStatuses.stream().filter(VehicleStatus::isEmergencyVehicle)
+                .map(v -> v.getVehicle().getVehicleId()).toList();
 
         // 응급 상태인 응급 차량의 emergencyEventId 뽑아냄
         // key: vehicleId
         // value: emergencyEventId
-        List<EmergencyEvent> emergencyEvents = emergencyEventRepository.findEmergencyEventIdByVehicle(emergencyVehicleIds);
+        List<EmergencyEvent> emergencyEvents = emergencyEventRepository.findEmergencyEventIdByVehicle(
+                emergencyVehicleIds);
         Map<Long, Long> emergencyEventMap = new HashMap<Long, Long>();
         emergencyEvents.forEach(e -> {
             emergencyEventMap.put(e.getVehicle().getVehicleId(), e.getEmergencyEventId());
@@ -97,7 +96,7 @@ public class VehicleStatusService {
 
 
     private VehicleStatusDto insertEmergencyEventId(VehicleStatus v, Map<Long, Long> emergencyEvents) {
-        if ( v.getVehicle() != null && emergencyEvents.get(v.getVehicle().getVehicleId()) != null) {
+        if (v.getVehicle() != null && emergencyEvents.get(v.getVehicle().getVehicleId()) != null) {
             return new VehicleStatusDto(v, emergencyEvents.get(v.getVehicle().getVehicleId()));
         } else {
             return new VehicleStatusDto(v);
@@ -144,7 +143,8 @@ public class VehicleStatusService {
         List<VehicleStatusDto> result = new ArrayList<VehicleStatusDto>();
         vehicleStatusRepository.findAllEmergencyVehicle()
                 .forEach(v -> {
-                    result.add(new VehicleStatusDto(v, emergencyEventRepository.findEmergencyEventIdByVehicle(v.getVehicle())));
+                    result.add(new VehicleStatusDto(v,
+                            emergencyEventRepository.findEmergencyEventIdByVehicle(v.getVehicle())));
                 });
 
         return result;

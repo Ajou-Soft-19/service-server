@@ -10,7 +10,6 @@ import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusCoordinat
 import com.ajousw.spring.web.controller.dto.vehicleStatus.VehicleStatusDto;
 import com.ajousw.spring.web.controller.dto.warm.WarnInfo;
 import com.ajousw.spring.web.controller.dto.warm.WarnListEmergencyRequestDto;
-import com.ajousw.spring.web.controller.dto.warm.WarnListRequestDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -51,7 +50,7 @@ public class AdminController {
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
-    /* 위경도 기반 주행중인 차량 조회 */
+    /* 위경도 기반 주행중인 전체 차량 조회 */
     @PostMapping("/monit/vehicle-status")
     public ApiResponseJson getVehicleStatusWithCoordinate(@AuthenticationPrincipal UserPrinciple user,
                                                           @Valid @RequestBody VehicleStatusCoordinateRequestDto vehicleCreateDto) {

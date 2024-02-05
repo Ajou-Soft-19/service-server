@@ -1,12 +1,11 @@
 package com.ajousw.spring.web.controller.dto.vehicleStatus;
 
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
-import com.ajousw.spring.domain.vehicle.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
+import com.ajousw.spring.domain.vehicle.entity.VehicleType;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -28,7 +27,7 @@ public class VehicleStatusNavigationPathDto {
         this.currentPathPoint = navigationPath.getCurrentPathPoint();
     }
 
-//    private UUID vehicleStatusId;
+    //    private UUID vehicleStatusId;
     private String vehicleStatusId;
     private Long vehicleId;
     private VehicleType vehicleType;

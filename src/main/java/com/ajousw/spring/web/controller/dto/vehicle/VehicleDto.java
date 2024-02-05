@@ -1,8 +1,8 @@
 package com.ajousw.spring.web.controller.dto.vehicle;
 
 import com.ajousw.spring.domain.member.enums.EnumValidation;
-import com.ajousw.spring.domain.vehicle.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
+import com.ajousw.spring.domain.vehicle.entity.VehicleType;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
