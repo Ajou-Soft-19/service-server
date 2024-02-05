@@ -98,7 +98,7 @@ public class WarnRecordService {
                 warnInfo.getSessionIds().add(v.getWarnRecordId().getSessionId());
                 warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(), warnInfo);
             } else {
-                warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(), new WarnInfo(v.getWarnRecordId().getCheckPointIndex(), v.getCreatedDate(), new ArrayList<String>(Collections.singleton(v.getWarnRecordId().getSessionId()))));
+                warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(), new WarnInfo(v.getWarnRecordId().getCheckPointIndex(), v.getCreatedDate(), new ArrayList<String>(Collections.singleton(v.getWarnRecordId().getSessionId())),  v.getEmergencyEvent().getEmergencyEventId()));
             }
         }
         return warnInfoMap.values().stream().sorted(Comparator.comparing(WarnInfo::getCheckPointIndex)).toList();

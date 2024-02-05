@@ -60,8 +60,8 @@ public class AdminController {
         return new ApiResponseJson(HttpStatus.OK, result);
     }
 
-    /* 현재 주행중인 모든 응급인 차량 리스트 조회 */
-    @GetMapping("/emergency/all")
+    /* 현재 주행중인 모든 차량 리스트 조회 */
+    @GetMapping("/monit/vehicle-status/all")
     public ApiResponseJson getVehicleStatusAll(@AuthenticationPrincipal UserPrinciple user) {
         List<VehicleStatusDto> result = vehicleStatusService.findAllVehicleStatus(user.getEmail());
         return new ApiResponseJson(HttpStatus.OK, result);
