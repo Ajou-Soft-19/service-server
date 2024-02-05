@@ -58,6 +58,9 @@ public class EmergencyNavigationService {
     @Value("${emergency.check-point-distance}")
     private double checkPointDistance;
 
+    @Value("${emergency.check-point-radius}")
+    private double checkPointRadius;
+
     @Value("${emergency.filter-radius}")
     private Double filterRadius;
 
@@ -109,6 +112,14 @@ public class EmergencyNavigationService {
                 navigationPath.getCheckPoints());
     }
 
+    // 어드민 조회용
+    @Transactional(readOnly = true)
+    public NavigationPathDto getNavigationPathById(Long naviPathId) {
+        NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
+        return createNavigationPathDto(navigationPath, navigationPath.getPathPoints(),
+                navigationPath.getCheckPoints());
+    }
+
     public void removeNavigationPath(String email, Long naviPathId) {
         Member member = findMemberByEmail(email);
         NavigationPath navigationPath = findNavigationPathById(naviPathId);
@@ -123,10 +134,8 @@ public class EmergencyNavigationService {
         navigationPathRepository.flush();
     }
 
-    public Optional<CheckPointDto> updateCurrentPathPoint(String email, Long naviPathId, Long curPathIdx) {
-        Member member = findMemberByEmail(email);
+    public Optional<CheckPointDto> updateCurrentPathPoint(Long naviPathId, Long emergencyEventId, Long curPathIdx) {
         NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
-        checkPathOwner(member, navigationPath);
 
         Long oldPathIdx = navigationPath.getCurrentPathPoint();
         List<CheckPoint> checkPoints = navigationPath.getCheckPoints();
@@ -134,12 +143,15 @@ public class EmergencyNavigationService {
         log.info("updated pathPoint for vehicleId {} naviPathId {} pathIndex {}",
                 navigationPath.getVehicle().getVehicleId(), navigationPath.getNaviPathId(), curPathIdx);
 
-        return alertNextCheckPointIfPassedCheckPoint(curPathIdx, navigationPath, oldPathIdx, checkPoints);
+        return alertNextCheckPointIfPassedCheckPoint(navigationPath, emergencyEventId, oldPathIdx, curPathIdx,
+                checkPoints);
     }
 
-    private Optional<CheckPointDto> alertNextCheckPointIfPassedCheckPoint(Long curPathIdx,
-                                                                          NavigationPath navigationPath,
+    // TODO: 다음 체크포인트까지의 경로를 보장하기
+    private Optional<CheckPointDto> alertNextCheckPointIfPassedCheckPoint(NavigationPath navigationPath,
+                                                                          Long emergencyEventId,
                                                                           Long oldPathIdx,
+                                                                          Long curPathIdx,
                                                                           List<CheckPoint> checkPoints) {
         Optional<CheckPoint> nextCheckPointOptional = findNextCheckPoint(curPathIdx, oldPathIdx,
                 checkPoints);
@@ -151,10 +163,10 @@ public class EmergencyNavigationService {
 
         CheckPoint nextCheckPoint = nextCheckPointOptional.get();
         List<PathPointDto> filteredPathPoints = navigationPath.getPathPoints().stream()
-                .filter(p -> filterPathInCheckPoint(nextCheckPoint, p))
+                .filter(p -> filterPathInCheckPoint(curPathIdx, nextCheckPoint, p))
                 .map(PathPointDto::new).toList();
 
-        alertService.alertNextCheckPoint(navigationPath, filteredPathPoints, nextCheckPoint, duration,
+        alertService.alertNextCheckPoint(navigationPath, emergencyEventId, filteredPathPoints, nextCheckPoint, duration,
                 navigationPath.getVehicle().getLicenceNumber(), navigationPath.getVehicle().getVehicleType());
 
         return Optional.of(new CheckPointDto(nextCheckPoint, duration));
@@ -186,14 +198,18 @@ public class EmergencyNavigationService {
         return tableQueryResultDto.getDuration();
     }
 
-    private boolean filterPathInCheckPoint(CheckPoint checkPoint, PathPoint pathPoint) {
+    private boolean filterPathInCheckPoint(Long curPathIdx, CheckPoint nextCheckPoint, PathPoint targetPathPoint) {
+        if (curPathIdx <= targetPathPoint.getPointIndex()
+                && targetPathPoint.getPointIndex() <= nextCheckPoint.getPointIndex()) {
+            return true;
+        }
         MapLocation checkPointLocation
-                = new MapLocation(checkPoint.getCoordinate().getY(), checkPoint.getCoordinate().getX());
+                = new MapLocation(nextCheckPoint.getCoordinate().getY(), nextCheckPoint.getCoordinate().getX());
         MapLocation pathPointLocation
-                = new MapLocation(pathPoint.getCoordinate().getY(), pathPoint.getCoordinate().getX());
+                = new MapLocation(targetPathPoint.getCoordinate().getY(), targetPathPoint.getCoordinate().getX());
         double distance = CoordinateUtil.calculateDistance(checkPointLocation, pathPointLocation);
 
-        return distance <= checkPointDistance;
+        return distance <= checkPointRadius;
     }
 
     private void checkVehicleOwner(Member member, Vehicle vehicle) {

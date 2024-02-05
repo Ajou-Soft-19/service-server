@@ -29,7 +29,7 @@ public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final JwtFilter jwtFilter;
-    private final String[] adminUrl = {"/admin/**"};
+    private final String[] adminUrl = {"/admin/**", "/api/admin"};
     private final String[] emergencyUrl = {"/api/emergency/**"};
     private final String[] permitAllUrl = {"/error", "/api/navi/route"};
     private final String[] anonymousUrl = {"/anonymous"};
@@ -50,7 +50,9 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/auth/roles", "/api/auth/roles/check-request").hasRole("USER")
                         .requestMatchers(adminUrl).hasRole("ADMIN")
+                        .requestMatchers("/api/auth/roles/**").hasRole("ADMIN")
                         .requestMatchers(permitAllUrl).permitAll()
                         .requestMatchers(anonymousUrl).anonymous()
                         .requestMatchers(emergencyUrl).hasAnyRole("ADMIN", "EMERGENCY")

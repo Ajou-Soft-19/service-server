@@ -14,6 +14,23 @@ import org.springframework.data.repository.query.Param;
 
 public interface EmergencyEventRepository extends JpaRepository<EmergencyEvent, Long> {
 
+    boolean existsByEmergencyEventId(Long emergencyEventId);
+
+    @Query("select ee from EmergencyEvent ee where ee.vehicle.vehicleId in :vehicleIds and ee.isActive = true")
+    List<EmergencyEvent> findEmergencyEventIdByVehicle(@Param("vehicleIds") List<Long> vehicleIds);
+
+    @Query("select ee.emergencyEventId from EmergencyEvent ee where ee.vehicle = :vehicle and ee.isActive = true")
+    Long findEmergencyEventIdByVehicle(@Param("vehicle") Vehicle vehicle);
+
+    @Query("select ee from EmergencyEvent ee where ee.emergencyEventId = :emergencyEventId")
+    Optional<EmergencyEvent> findOneByEmergencyEventId(@Param("emergencyEventId") Long emergencyEventId);
+
+    @Query("select ee from EmergencyEvent ee where ee.vehicle = :vehicle and ee.isActive=true order by ee.createdDate desc limit 1")
+    Optional<EmergencyEvent> findEmergencyEventByVehicle(@Param("vehicle") Vehicle vehicle);
+
+    @Query("select ee.navigationPath from EmergencyEvent ee where ee.isActive and ee.vehicle.vehicleId = :vehicleId")
+    NavigationPath findNavigationPathIdByVehicleId(@Param("vehicleId") Long vehicleId);
+
     boolean existsByNavigationPath(NavigationPath navigationPath);
 
     boolean existsByVehicle(Vehicle vehicle);

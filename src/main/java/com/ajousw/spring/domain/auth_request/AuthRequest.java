@@ -1,11 +1,10 @@
 package com.ajousw.spring.domain.auth_request;
 
 import com.ajousw.spring.domain.member.Member;
+import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.domain.member.repository.BaseTimeEntity;
-import com.ajousw.spring.domain.vehicle.VehicleType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -18,11 +17,31 @@ public class AuthRequest extends BaseTimeEntity {
     @Column(name = "auth_request_id")
     private Long id;
 
-    @Column(unique = true)
-    private Long userId;
+    @JoinColumn(name = "member_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member member;
 
-    @Builder
-    public AuthRequest(Long userId) {
-        this.userId = userId;
+    @Enumerated(EnumType.STRING)
+    private Role roleType;
+
+    private boolean isPending;
+
+    private boolean isApproved;
+
+    public AuthRequest(Member member, Role role) {
+        this.member = member;
+        this.roleType = role;
+        this.isApproved = false;
+        this.isPending = true;
+    }
+
+    public void approveRole() {
+        this.isPending = false;
+        this.isApproved = true;
+    }
+
+    public void rejectRole() {
+        this.isPending = false;
+        this.isApproved = false;
     }
 }

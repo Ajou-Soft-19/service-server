@@ -1,4 +1,4 @@
-package com.ajousw.spring.web.controller.dto.vehicleStatus;
+package com.ajousw.spring.web.controller.dto.navigationPath;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -8,8 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class VehicleStatusCoordinateRequestDto {
-    private Double latitude;
+public class CheckPointItem {
     private Double longitude;
-    private Double radius;
+    private Double latitude;
+    private Long pointIndex;
+    private Double distance;
+    private Double duration;
 }

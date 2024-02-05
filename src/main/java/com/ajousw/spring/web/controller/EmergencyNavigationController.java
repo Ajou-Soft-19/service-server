@@ -2,16 +2,12 @@ package com.ajousw.spring.web.controller;
 
 import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.navigation.EmergencyNavigationService;
-import com.ajousw.spring.domain.navigation.dto.CheckPointDto;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.route.NaverNavigationService;
 import com.ajousw.spring.domain.navigation.route.OsrmNavigationService;
-import com.ajousw.spring.web.controller.dto.navigation.CurrentPointUpdateDto;
 import com.ajousw.spring.web.controller.dto.navigation.EmergencyNavigationQueryDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;
-import java.util.Map;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -61,19 +57,19 @@ public class EmergencyNavigationController {
         return new ApiResponseJson(HttpStatus.OK, navigationPathDto);
     }
 
-    @PostMapping("/api/emergency/navi/path/current-position/update")
-    public ApiResponseJson updateCurrentPosition(@Valid @RequestBody CurrentPointUpdateDto updateDto,
-                                                 BindingResult bindingResult,
-                                                 @AuthenticationPrincipal UserPrinciple userPrinciple) {
-        checkBindingResult(bindingResult);
-
-        Optional<CheckPointDto> checkPointDto = emergencyNavigationService.updateCurrentPathPoint(
-                userPrinciple.getEmail(),
-                updateDto.getNaviPathId(), updateDto.getCurrentPoint());
-
-        return new ApiResponseJson(HttpStatus.OK,
-                Map.of("nextPoint", checkPointDto.isEmpty() ? "No New CheckPoint" : checkPointDto.get()));
-    }
+//    @PostMapping("/api/emergency/navi/path/current-position/update")
+//    public ApiResponseJson updateCurrentPosition(@Valid @RequestBody CurrentPointUpdateDto updateDto,
+//                                                 BindingResult bindingResult,
+//                                                 @AuthenticationPrincipal UserPrinciple userPrinciple) {
+//        checkBindingResult(bindingResult);
+//
+//        Optional<CheckPointDto> checkPointDto = emergencyNavigationService.updateCurrentPathPoint(
+//                userPrinciple.getEmail(),
+//                updateDto.getNaviPathId(), updateDto.getCurrentPoint());
+//
+//        return new ApiResponseJson(HttpStatus.OK,
+//                Map.of("nextPoint", checkPointDto.isEmpty() ? "No New CheckPoint" : checkPointDto.get()));
+//    }
 
     @PostMapping("/api/emergency/navi/path/remove")
     public ApiResponseJson removeNavigationPath(@RequestParam(value = "naviPathId") Long naviPathId,

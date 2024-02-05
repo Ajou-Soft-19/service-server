@@ -17,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MemberService {
     public final MemberJpaRepository memberJpaRepository;
+
     /* find emergency user */
     public List<EmergencyMemberDto> findEmergencyMember(Member member) {
         // amdin 확인
@@ -25,9 +26,9 @@ public class MemberService {
 
         memberJpaRepository.findAll()
                 .forEach(v -> {
-                            if (v.hasRole(Role.ROLE_EMERGENCY_VEHICLE)) {
-                                result.add(new EmergencyMemberDto(v.getId(), v.getUsername()));
-                            }
+                    if (v.hasRole(Role.ROLE_EMERGENCY_VEHICLE)) {
+                        result.add(new EmergencyMemberDto(v.getId(), v.getUsername()));
+                    }
                 });
         return result;
     }
@@ -77,17 +78,6 @@ public class MemberService {
             memberJpaRepository.save(targetMember);
             return targetMember.getRoles();
         }
-    }
-
-    public String approveRole(String email, Long targetId) {
-        Member member = this.findByEmail(email);
-        Member targetMember = this.findByMemberId(targetId);
-        this.checkAdmin(member);
-
-        targetMember.addRole(Role.ROLE_EMERGENCY_VEHICLE);
-        memberJpaRepository.save(targetMember);
-
-        return targetMember.getRoles();
     }
 
     public void checkAdmin(Member member) {

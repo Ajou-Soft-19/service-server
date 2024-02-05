@@ -1,8 +1,8 @@
 package com.ajousw.spring.web.controller.dto.vehicle;
 
 import com.ajousw.spring.domain.member.enums.EnumValidation;
-import com.ajousw.spring.domain.vehicle.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
+import com.ajousw.spring.domain.vehicle.entity.VehicleType;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -19,6 +19,7 @@ public class VehicleDto {
         this.licenceNumber = vehicle.getLicenceNumber();
         this.vehicleId = vehicle.getVehicleId();
     }
+
     @NotEmpty
     private Long vehicleId;
 
@@ -30,6 +31,4 @@ public class VehicleDto {
 
     @EnumValidation(enumClass = VehicleType.class)
     private VehicleType vehicleType;
-
-    private String phoneNumber;
 }

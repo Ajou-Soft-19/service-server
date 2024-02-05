@@ -24,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-// TODO: 경고 대상이 된 차량 조회 로직 구현
 @Slf4j
 @Service
 @Transactional

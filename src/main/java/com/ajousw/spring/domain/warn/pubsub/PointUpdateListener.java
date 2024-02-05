@@ -26,11 +26,10 @@ public class PointUpdateListener implements MessageListener {
     public void onMessage(Message message, byte[] pattern) {
         try {
             CurrentPointUpdateDto updateDto = objectMapper.readValue(message.getBody(), CurrentPointUpdateDto.class);
-            getEmergencyService().updateCurrentPathPoint(updateDto.getEmail(), updateDto.getNaviPathId(),
+            getEmergencyService().updateCurrentPathPoint(updateDto.getNaviPathId(), updateDto.getEmergencyEventId(),
                     updateDto.getCurrentPoint());
         } catch (IOException e) {
-            log.error("error while listening broadcast message");
-            throw new IllegalStateException(e);
+            log.error("error while listening broadcast message", e);
         }
     }
 
