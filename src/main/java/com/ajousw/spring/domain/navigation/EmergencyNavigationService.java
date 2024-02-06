@@ -159,12 +159,12 @@ public class EmergencyNavigationService {
             return Optional.empty();
         }
 
-        double duration = calculateDuration(curPathIdx, navigationPath, oldPathIdx);
-
         CheckPoint nextCheckPoint = nextCheckPointOptional.get();
         List<PathPointDto> filteredPathPoints = navigationPath.getPathPoints().stream()
                 .filter(p -> filterPathInCheckPoint(curPathIdx, nextCheckPoint, p))
                 .map(PathPointDto::new).toList();
+
+        double duration = calculateDuration(curPathIdx, nextCheckPoint, navigationPath);
 
         alertService.alertNextCheckPoint(navigationPath, emergencyEventId, filteredPathPoints, nextCheckPoint, duration,
                 navigationPath.getVehicle().getLicenceNumber(), navigationPath.getVehicle().getVehicleType());
@@ -188,12 +188,11 @@ public class EmergencyNavigationService {
                 .min(Comparator.comparing(CheckPoint::getPointIndex));
     }
 
-    private double calculateDuration(Long curPathIdx, NavigationPath navigationPath, Long oldPathIdx) {
-        PathPoint prevPathPoint = navigationPath.getPathPoints().get(oldPathIdx.intValue());
+    private double calculateDuration(Long curPathIdx, CheckPoint nextCheckPoint, NavigationPath navigationPath) {
         PathPoint curPathPoint = navigationPath.getPathPoints().get(curPathIdx.intValue());
-        List<TableQueryResultDto> queryResultDtos = osrmTableService.getTableOfDistancesAndDurations(
-                coordinateToString(prevPathPoint.getCoordinate()),
-                List.of(coordinateToString(curPathPoint.getCoordinate())));
+        List<TableQueryResultDto> queryResultDtos = osrmTableService.getTableOfMultiDestDistanceAndDuration(
+                coordinateToString(curPathPoint.getCoordinate()),
+                List.of(coordinateToString(nextCheckPoint.getCoordinate())));
         TableQueryResultDto tableQueryResultDto = queryResultDtos.get(0);
         return tableQueryResultDto.getDuration();
     }
@@ -282,23 +281,15 @@ public class EmergencyNavigationService {
             );
 
             accumulatedDistance += distance;
+            previousPoint = currentPoint;
             if (accumulatedDistance < checkPointDistance) {
                 continue;
             }
-//            계산량이 너무 많아서 경로 이탈 재계산 고려 update 시마다 그때그때 계산?
-//            List<TableQueryResultDto> queryResultDtos = tableService.getTableOfDistancesAndDurations(
-//                    coordinateToString(previousPoint.getCoordinate()),
-//                    List.of(coordinateToString(currentPoint.getCoordinate())));
-//
-//            TableQueryResultDto tableQueryResultDto = queryResultDtos.get(0);
-//            Double duration = tableQueryResultDto.getDuration();
 
             checkPoints.add(
                     new CheckPoint(navigationPath, currentPoint.getCoordinate(),
                             (long) i, accumulatedDistance, 0.0));
             accumulatedDistance = 0;
-
-            previousPoint = currentPoint;
         }
 
         return checkPoints;
