@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TableQueryResultDto {
 
-    private int destinationIndex;
+    private int index;
 
     private String source;
 

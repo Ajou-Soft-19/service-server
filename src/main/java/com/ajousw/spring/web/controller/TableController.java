@@ -20,10 +20,18 @@ public class TableController {
 
     private final OsrmTableService osrmTableService;
 
-    @PostMapping("/api/navi/table")
-    public ApiResponseJson calculateDistanceAndDuration(@Valid @RequestBody TableQueryDto tableQueryDto) {
-        List<TableQueryResultDto> tableOfDistancesAndDurations = osrmTableService.getTableOfDistancesAndDurations(
-                tableQueryDto.getSource(), tableQueryDto.getDestinations());
+    @PostMapping("/api/navi/table/multi-dest")
+    public ApiResponseJson calculateDistanceAndDurationMultiDest(@Valid @RequestBody TableQueryDto tableQueryDto) {
+        List<TableQueryResultDto> tableOfDistancesAndDurations = osrmTableService.getTableOfMultiDestDistanceAndDuration(
+                tableQueryDto.getSources().get(0), tableQueryDto.getDestinations());
+
+        return new ApiResponseJson(HttpStatus.OK, tableOfDistancesAndDurations);
+    }
+
+    @PostMapping("/api/navi/table/multi-source")
+    public ApiResponseJson calculateDistanceAndDurationMultiSource(@Valid @RequestBody TableQueryDto tableQueryDto) {
+        List<TableQueryResultDto> tableOfDistancesAndDurations = osrmTableService.getTableOfMultiSourceDistanceAndDuration(
+                tableQueryDto.getSources(), tableQueryDto.getDestinations().get(0));
 
         return new ApiResponseJson(HttpStatus.OK, tableOfDistancesAndDurations);
     }

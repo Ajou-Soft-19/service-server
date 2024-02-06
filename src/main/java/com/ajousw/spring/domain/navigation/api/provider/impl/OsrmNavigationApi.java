@@ -65,7 +65,7 @@ public class OsrmNavigationApi implements NavigationApi {
         ResponseEntity<String> response = null;
         try {
             response = webClient.get()
-                    .uri(setTableParams(tableRequestUrl, (String) params.get("source"),
+                    .uri(setTableParams(tableRequestUrl, (List<String>) params.get("sources"),
                             (List<String>) params.get("destinations")))
                     .retrieve()
                     .toEntity(String.class)
@@ -85,15 +85,21 @@ public class OsrmNavigationApi implements NavigationApi {
         return String.format(requestUrl, start, goal, getSteps);
     }
 
-    private String setTableParams(String requestUrl, String start, List<String> goals) {
+    private String setTableParams(String requestUrl, List<String> starts, List<String> goals) {
         List<String> coordinates = new ArrayList<>();
-        coordinates.add(start);
+        coordinates.addAll(starts);
         coordinates.addAll(goals);
         String coordinatesString = String.join(";", coordinates);
-        String destinationString = IntStream.rangeClosed(1, goals.size())
+
+        String startPointString = IntStream.rangeClosed(0, starts.size() - 1)
                 .mapToObj(Integer::toString)
                 .collect(Collectors.joining(";"));
 
-        return String.format(requestUrl, coordinatesString, 0, destinationString);
+        String destinationString = IntStream.rangeClosed(starts.size(), starts.size() + goals.size() - 1)
+                .mapToObj(Integer::toString)
+                .collect(Collectors.joining(";"));
+
+        return String.format(requestUrl, coordinatesString, startPointString, destinationString);
     }
+
 }
