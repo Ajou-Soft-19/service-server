@@ -4,10 +4,8 @@ import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
-import com.ajousw.spring.domain.navigation.entity.repository.BatchInsertJdbcRepository;
 import com.ajousw.spring.domain.navigation.entity.repository.NavigationPathRepository;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
-import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleRepository;
 import com.ajousw.spring.domain.warn.entity.EmergencyEvent;
 import com.ajousw.spring.domain.warn.entity.WarnRecord;
@@ -30,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class EmergencyEventService {
 
-    private final BatchInsertJdbcRepository batchInsertJdbcRepository;
     private final EmergencyEventRepository emergencyEventRepository;
     private final NavigationPathRepository navigationPathRepository;
     private final MemberJpaRepository memberRepository;
@@ -62,17 +59,6 @@ public class EmergencyEventService {
 
         checkEventOwner(member, event);
         event.endEvent();
-    }
-
-    // 내부 로깅용
-    public void addWarnRecord(String uuid, EmergencyEvent emergencyEvent, Long checkPointIndex,
-                              List<VehicleStatus> vehicleStatuses) {
-        List<WarnRecord> newRecords = vehicleStatuses.stream()
-                .map(vs -> new WarnRecord(emergencyEvent, checkPointIndex, vs))
-                .toList();
-
-        batchInsertJdbcRepository.saveAllWarnRecordsInBatch(newRecords);
-        log.info("<{}> batchInsert Success", uuid);
     }
 
     @Transactional(readOnly = true)

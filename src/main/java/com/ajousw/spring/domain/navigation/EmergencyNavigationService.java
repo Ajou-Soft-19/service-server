@@ -134,7 +134,7 @@ public class EmergencyNavigationService {
         navigationPathRepository.flush();
     }
 
-    public Optional<CheckPointDto> updateCurrentPathPoint(Long naviPathId, Long emergencyEventId, Long curPathIdx) {
+    public void updateCurrentPathPoint(Long naviPathId, Long emergencyEventId, Long curPathIdx) {
         NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
 
         Long oldPathIdx = navigationPath.getCurrentPathPoint();
@@ -143,23 +143,29 @@ public class EmergencyNavigationService {
         log.info("updated pathPoint for vehicleId {} naviPathId {} pathIndex {}",
                 navigationPath.getVehicle().getVehicleId(), navigationPath.getNaviPathId(), curPathIdx);
 
-        return alertNextCheckPointIfPassedCheckPoint(navigationPath, emergencyEventId, oldPathIdx, curPathIdx,
+        alertNextCheckPoint(navigationPath, emergencyEventId, oldPathIdx, curPathIdx,
                 checkPoints);
     }
 
     // TODO: 다음 체크포인트까지의 경로를 보장하기
-    private Optional<CheckPointDto> alertNextCheckPointIfPassedCheckPoint(NavigationPath navigationPath,
-                                                                          Long emergencyEventId,
-                                                                          Long oldPathIdx,
-                                                                          Long curPathIdx,
-                                                                          List<CheckPoint> checkPoints) {
+    private void alertNextCheckPoint(NavigationPath navigationPath,
+                                     Long emergencyEventId,
+                                     Long oldPathIdx,
+                                     Long curPathIdx,
+                                     List<CheckPoint> checkPoints) {
         Optional<CheckPoint> nextCheckPointOptional = findNextCheckPoint(curPathIdx, oldPathIdx,
                 checkPoints);
-        if (nextCheckPointOptional.isEmpty()) {
-            return Optional.empty();
+        CheckPoint nextCheckPoint;
+        // 체크포인트가 하나도 없는 경우를 처리하기 위한 예외
+        nextCheckPoint = nextCheckPointOptional.orElseGet(() -> checkPoints.stream()
+                .filter(c -> c.getPointIndex() <= curPathIdx)
+                .max(Comparator.comparing(CheckPoint::getPointIndex))
+                .orElse(null));
+
+        if (nextCheckPoint == null) {
+            return;
         }
 
-        CheckPoint nextCheckPoint = nextCheckPointOptional.get();
         List<PathPointDto> filteredPathPoints = navigationPath.getPathPoints().stream()
                 .filter(p -> filterPathInCheckPoint(curPathIdx, nextCheckPoint, p))
                 .map(PathPointDto::new).toList();
@@ -168,8 +174,6 @@ public class EmergencyNavigationService {
 
         alertService.alertNextCheckPoint(navigationPath, emergencyEventId, filteredPathPoints, nextCheckPoint, duration,
                 navigationPath.getVehicle().getLicenceNumber(), navigationPath.getVehicle().getVehicleType());
-
-        return Optional.of(new CheckPointDto(nextCheckPoint, duration));
     }
 
     private Optional<CheckPoint> findNextCheckPoint(Long curPathIdx, Long oldPathIdx, List<CheckPoint> checkPoints) {

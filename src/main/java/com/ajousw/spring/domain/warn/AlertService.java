@@ -6,12 +6,15 @@ import com.ajousw.spring.domain.navigation.dto.PathPointDto;
 import com.ajousw.spring.domain.navigation.dto.TableQueryResultDto;
 import com.ajousw.spring.domain.navigation.entity.CheckPoint;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
+import com.ajousw.spring.domain.navigation.entity.repository.BatchInsertJdbcRepository;
 import com.ajousw.spring.domain.navigation.route.OsrmTableService;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
 import com.ajousw.spring.domain.warn.entity.EmergencyEvent;
+import com.ajousw.spring.domain.warn.entity.WarnRecord;
 import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
+import com.ajousw.spring.domain.warn.entity.repository.WarnRecordRepository;
 import com.ajousw.spring.domain.warn.pubsub.RedisMessagePublisher;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,10 +36,11 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AlertService {
 
+    private final BatchInsertJdbcRepository batchInsertJdbcRepository;
     private final EmergencyEventRepository emergencyEventRepository;
     private final VehicleStatusRepository vehicleStatusRepository;
     private final RedisMessagePublisher redisMessagePublisher;
-    private final EmergencyEventService emergencyEventService;
+    private final WarnRecordRepository warnRecordRepository;
     private final OsrmTableService osrmTableService;
 
     @Value("${emergency.check-point-distance}")
@@ -51,6 +55,8 @@ public class AlertService {
                                     List<PathPointDto> filteredPathPoints,
                                     CheckPoint nextCheckPoint, double duration, String licenceNumber,
                                     VehicleType vehicleType) {
+        long startTime = System.currentTimeMillis();
+        log.info("Warning Start");
         String uuid = UUID.randomUUID().toString();
         log.info("<{}> Alert Request of {} with pathId {}", uuid, licenceNumber, emergencyPath.getNaviPathId());
         log.info("<{}> warning checkPointIdx {}", uuid, nextCheckPoint.getPointIndex());
@@ -62,23 +68,32 @@ public class AlertService {
         }
 
         EmergencyEvent emergencyEvent = eventOpt.get();
+        List<String> sessionIdAlreadyWarned = warnRecordRepository.findSessionIdByEmergencyEventIdAndCheckPointIndex(
+                emergencyEventId, nextCheckPoint.getPointIndex());
 
         // 모든 차량
 //        List<VehicleStatus> targetVehicleStatus = vehicleStatusRepository.findAll();
 
         // 필터링 차량
-        List<VehicleStatus> targetVehicleStatus = filterTargetSession(nextCheckPoint, filteredPathPoints, duration);
-        Set<String> targetSession = targetVehicleStatus.stream().map(VehicleStatus::getVehicleStatusId).collect(
-                Collectors.toSet());
+        List<VehicleStatus> targetVehicleStatus = filterTargetSession(nextCheckPoint, filteredPathPoints, duration)
+                .stream()
+                .filter(vehicleStatus -> !sessionIdAlreadyWarned.contains(vehicleStatus.getVehicleStatusId()))
+                .toList();
+
+        log.info("sessionId {}", sessionIdAlreadyWarned);
+
+        Set<String> targetSession = targetVehicleStatus.stream()
+                .map(VehicleStatus::getVehicleStatusId)
+                .collect(Collectors.toSet());
 
         AlertDto alertDto = new AlertDto(emergencyEventId, nextCheckPoint.getPointIndex(), licenceNumber, vehicleType,
                 emergencyPath.getCurrentPathPoint(), filteredPathPoints);
 
         redisMessagePublisher.publishAlertMessageToSocket(new BroadcastDto(targetSession, alertDto));
-        emergencyEventService.addWarnRecord(uuid, emergencyEvent, nextCheckPoint.getPointIndex(), targetVehicleStatus);
+        addWarnRecord(uuid, emergencyEvent, nextCheckPoint.getPointIndex(), targetVehicleStatus);
         log.info("<{}> Alert Broadcast to {} vehicles", uuid, targetVehicleStatus.size());
+        log.info("Warn ended {}ms", System.currentTimeMillis() - startTime);
     }
-
 
     /**
      * @param nextCheckPoint 다음 체크포인트
@@ -89,9 +104,6 @@ public class AlertService {
                                             double duration) {
         List<VehicleStatus> vehicleStatusInRange = vehicleStatusRepository.findAllWithinRadius(
                 nextCheckPoint.getCoordinate().getX(), nextCheckPoint.getCoordinate().getY(), checkPointRadius);
-        if (vehicleStatusInRange.size() == 0) {
-            return List.of();
-        }
 
         // 네비게이션을 사용하는 차량 포함
         List<VehicleStatus> vehicleUsingNavi = vehicleStatusInRange.stream()
@@ -103,9 +115,13 @@ public class AlertService {
 
         List<VehicleStatus> targetVehicleStatus = new ArrayList<>(vehicleUsingNavi);
 
+        if (vehicleNotUsingNavi.size() == 0) {
+            return List.of();
+        }
+
         List<String> sources = new ArrayList<>();
-        for (int i = 0; i < vehicleNotUsingNavi.size(); i++) {
-            sources.add(coordinateToString(vehicleNotUsingNavi.get(i).getCoordinate()));
+        for (VehicleStatus vehicleStatus : vehicleNotUsingNavi) {
+            sources.add(coordinateToString(vehicleStatus.getCoordinate()));
         }
         String destination = coordinateToString(nextCheckPoint.getCoordinate());
 
@@ -130,6 +146,16 @@ public class AlertService {
         }
 
         return targetVehicleStatus;
+    }
+
+    public void addWarnRecord(String uuid, EmergencyEvent emergencyEvent, Long checkPointIndex,
+                              List<VehicleStatus> vehicleStatuses) {
+        List<WarnRecord> newRecords = vehicleStatuses.stream()
+                .map(vs -> new WarnRecord(emergencyEvent, checkPointIndex, vs))
+                .toList();
+
+        batchInsertJdbcRepository.saveAllWarnRecordsInBatch(newRecords);
+        log.info("<{}> batchInsert Success", uuid);
     }
 
     private String coordinateToString(Point point) {
