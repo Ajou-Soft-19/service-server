@@ -3,15 +3,17 @@ package com.ajousw.spring.domain.warn;
 import com.ajousw.spring.domain.navigation.dto.AlertDto;
 import com.ajousw.spring.domain.navigation.dto.BroadcastDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
+import com.ajousw.spring.domain.navigation.dto.TableQueryResultDto;
 import com.ajousw.spring.domain.navigation.entity.CheckPoint;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
+import com.ajousw.spring.domain.navigation.route.OsrmTableService;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
 import com.ajousw.spring.domain.warn.entity.EmergencyEvent;
 import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.domain.warn.pubsub.RedisMessagePublisher;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -19,6 +21,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Point;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,7 @@ public class AlertService {
     private final VehicleStatusRepository vehicleStatusRepository;
     private final RedisMessagePublisher redisMessagePublisher;
     private final EmergencyEventService emergencyEventService;
+    private final OsrmTableService osrmTableService;
 
     @Value("${emergency.check-point-distance}")
     private double checkPointDistance;
@@ -47,7 +51,6 @@ public class AlertService {
                                     List<PathPointDto> filteredPathPoints,
                                     CheckPoint nextCheckPoint, double duration, String licenceNumber,
                                     VehicleType vehicleType) {
-
         String uuid = UUID.randomUUID().toString();
         log.info("<{}> Alert Request of {} with pathId {}", uuid, licenceNumber, emergencyPath.getNaviPathId());
         log.info("<{}> warning checkPointIdx {}", uuid, nextCheckPoint.getPointIndex());
@@ -60,8 +63,11 @@ public class AlertService {
 
         EmergencyEvent emergencyEvent = eventOpt.get();
 
-        // 일단 모든 차량을 대상으로 알림
-        List<VehicleStatus> targetVehicleStatus = vehicleStatusRepository.findAll();
+        // 모든 차량
+//        List<VehicleStatus> targetVehicleStatus = vehicleStatusRepository.findAll();
+
+        // 필터링 차량
+        List<VehicleStatus> targetVehicleStatus = filterTargetSession(nextCheckPoint, filteredPathPoints, duration);
         Set<String> targetSession = targetVehicleStatus.stream().map(VehicleStatus::getVehicleStatusId).collect(
                 Collectors.toSet());
 
@@ -73,23 +79,61 @@ public class AlertService {
         log.info("<{}> Alert Broadcast to {} vehicles", uuid, targetVehicleStatus.size());
     }
 
-    Set<String> filterTargetSession(NavigationPath emergencyPath, CheckPoint nextCheckPoint, double duration) {
-        List<VehicleStatus> targetVehicleStatus = vehicleStatusRepository.findAllWithinRadius(
-                nextCheckPoint.getCoordinate().getY(), nextCheckPoint.getCoordinate().getX(), checkPointRadius);
+
+    /**
+     * @param nextCheckPoint 다음 체크포인트
+     * @param duration       응급 차량이 다음 체크포인트에 도달하기 까지의 시간
+     * @return 1. 네비게이션 사용 중인 차량 -> 포함 2. 네비게이션 사용 중이지 않은 차량 -> 시간 내에 도달 가능한 차량만 포함 (거리상으론 가깝지만, 도로 상으론 멀리 떨어진 차량 필터링)
+     */
+    List<VehicleStatus> filterTargetSession(CheckPoint nextCheckPoint, List<PathPointDto> filteredPathPoints,
+                                            double duration) {
+        List<VehicleStatus> vehicleStatusInRange = vehicleStatusRepository.findAllWithinRadius(
+                nextCheckPoint.getCoordinate().getX(), nextCheckPoint.getCoordinate().getY(), checkPointRadius);
+        if (vehicleStatusInRange.size() == 0) {
+            return List.of();
+        }
 
         // 네비게이션을 사용하는 차량 포함
-        List<String> vehicleUsingNavi = targetVehicleStatus.stream()
+        List<VehicleStatus> vehicleUsingNavi = vehicleStatusInRange.stream()
                 .filter(VehicleStatus::isUsingNavi)
-                .map(VehicleStatus::getVehicleStatusId)
                 .toList();
-        Set<String> targetSession = new HashSet<>(vehicleUsingNavi);
 
-        // TODO: 네비게이션을 사용하지 않는 차량 로직 구현
-        List<VehicleStatus> vehicleNotUsingNavi = targetVehicleStatus.stream()
+        List<VehicleStatus> vehicleNotUsingNavi = vehicleStatusInRange.stream()
                 .filter(vs -> !vs.isUsingNavi()).toList();
-        targetSession.addAll(vehicleNotUsingNavi.stream().map(VehicleStatus::getVehicleStatusId).toList());
 
-        return targetSession;
+        List<VehicleStatus> targetVehicleStatus = new ArrayList<>(vehicleUsingNavi);
+
+        List<String> sources = new ArrayList<>();
+        for (int i = 0; i < vehicleNotUsingNavi.size(); i++) {
+            sources.add(coordinateToString(vehicleNotUsingNavi.get(i).getCoordinate()));
+        }
+        String destination = coordinateToString(nextCheckPoint.getCoordinate());
+
+        List<TableQueryResultDto> resultDtos;
+        try {
+            resultDtos = osrmTableService.getTableOfMultiSourceDistanceAndDuration(
+                    sources, destination);
+            if (sources.size() != resultDtos.size()) {
+                throw new RuntimeException("table result 갯수 안 맞음");
+            }
+        } catch (Exception e) {
+            log.error("table api 사용 중 오류 발생 {}", e.getMessage());
+            targetVehicleStatus.addAll(vehicleNotUsingNavi);
+            return targetVehicleStatus;
+        }
+
+        for (int i = 0; i < resultDtos.size(); i++) {
+            TableQueryResultDto resultDto = resultDtos.get(i);
+            if (resultDto.getDuration() <= duration) {
+                targetVehicleStatus.add(vehicleNotUsingNavi.get(i));
+            }
+        }
+
+        return targetVehicleStatus;
+    }
+
+    private String coordinateToString(Point point) {
+        return point.getX() + "," + point.getY();
     }
 
 }

@@ -265,9 +265,11 @@ public class EmergencyNavigationService {
      * @see CheckPoint
      */
     private List<CheckPoint> calculateCheckPoints(NavigationPath navigationPath, List<PathPoint> pathPoints) {
-        List<CheckPoint> checkPoints = new ArrayList<>();
         PathPoint previousPoint = pathPoints.get(0);
         double accumulatedDistance = 0;
+
+        List<CheckPoint> checkPoints = new ArrayList<>();
+        checkPoints.add(new CheckPoint(navigationPath, pathPoints.get(0).getCoordinate(), 0L, 0.0, 0.0));
 
         for (int i = 1; i < pathPoints.size() - 1; i++) {
             PathPoint currentPoint = pathPoints.get(i);
