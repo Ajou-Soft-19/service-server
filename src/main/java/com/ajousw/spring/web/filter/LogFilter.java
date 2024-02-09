@@ -22,7 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Order(SecurityProperties.DEFAULT_FILTER_ORDER - 2)
 public class LogFilter extends OncePerRequestFilter {
     public static final String TRACE_ID = "traceId";
-    public static final String[] noFilterUrl = {"/error", "/favicon.ico"};
+    public static final String[] noFilterUrl = {"/error", "/favicon.ico", "/api/admin/monit/**"};
     private static final String X_FORWARD = "X-FORWARDED-FOR";
     private static final String LOG_START_FORMAT = "[REQUEST URI : {}, METHOD : {}, IP : {}]";
     private static final String LOG_END_FORMAT = "Response Time = {}ms";

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.MDC;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -27,6 +28,7 @@ public class JwtFilter extends OncePerRequestFilter {
     public static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_REGEX = "Bearer ([a-zA-Z0-9_\\-\\+\\/=]+)\\.([a-zA-Z0-9_\\-\\+\\/=]+)\\.([a-zA-Z0-9_.\\-\\+\\/=]*)";
     private static final Pattern BEARER_PATTERN = Pattern.compile(BEARER_REGEX);
+    public static final String TRACE_ID = "traceId";
     private final TokenProvider tokenProvider;
 
     @Override
@@ -63,7 +65,9 @@ public class JwtFilter extends OncePerRequestFilter {
     private void handleValidToken(String token, Claims claims) {
         Authentication authentication = tokenProvider.getAuthentication(token, claims);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        log.info("AUTH SUCCESS : {},", authentication.getName());
+        if (MDC.get(TRACE_ID) != null) {
+            log.info("AUTH SUCCESS : {},", authentication.getName());
+        }
     }
 
     private void handleBlackListedToken(HttpServletRequest request, HttpServletResponse response,
