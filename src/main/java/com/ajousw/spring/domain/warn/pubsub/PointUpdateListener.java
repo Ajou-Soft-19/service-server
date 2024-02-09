@@ -1,6 +1,6 @@
 package com.ajousw.spring.domain.warn.pubsub;
 
-import com.ajousw.spring.domain.navigation.EmergencyNavigationService;
+import com.ajousw.spring.domain.navigation.EmergencyTrackService;
 import com.ajousw.spring.web.controller.dto.navigation.CurrentPointUpdateDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 public class PointUpdateListener implements MessageListener {
     private final ObjectMapper objectMapper;
     private final ApplicationContext applicationContext;
-    private EmergencyNavigationService emergencyNavigationService = null;
+    private EmergencyTrackService emergencyTrackService = null;
 
     public PointUpdateListener(ObjectMapper objectMapper, ApplicationContext applicationContext) {
         this.objectMapper = objectMapper;
@@ -26,7 +26,8 @@ public class PointUpdateListener implements MessageListener {
     public void onMessage(Message message, byte[] pattern) {
         try {
             CurrentPointUpdateDto updateDto = objectMapper.readValue(message.getBody(), CurrentPointUpdateDto.class);
-            getEmergencyService().updateCurrentPathPoint(updateDto.getNaviPathId(), updateDto.getEmergencyEventId(),
+            getEmergencyTrackService().updateCurrentPathPoint(updateDto.getNaviPathId(),
+                    updateDto.getEmergencyEventId(),
                     updateDto.getCurrentPoint());
         } catch (IOException e) {
             log.error("error while listening broadcast message", e);
@@ -34,12 +35,12 @@ public class PointUpdateListener implements MessageListener {
     }
 
     // 순환 참조로 applicationContext에서 꺼내서 사용
-    private EmergencyNavigationService getEmergencyService() {
-        if (emergencyNavigationService == null) {
-            emergencyNavigationService = applicationContext.getBean(EmergencyNavigationService.class);
+    private EmergencyTrackService getEmergencyTrackService() {
+        if (emergencyTrackService == null) {
+            emergencyTrackService = applicationContext.getBean(EmergencyTrackService.class);
         }
 
-        return emergencyNavigationService;
+        return emergencyTrackService;
     }
 
 }

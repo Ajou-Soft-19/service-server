@@ -93,10 +93,8 @@ public class WarnRecord implements Persistable<WarnRecordId> {
                 this.warnRecordId.sessionId);
     }
 
-    // 그냥 True? 어차피 수정할일 없으니까
     @Override
     public boolean isNew() {
-//        return this.getCreatedDate() == null;
         return true;
     }
 }
