@@ -76,6 +76,10 @@ public class EmergencyNavigationService {
         batchInsertJdbcRepository.saveAllPathPointsInBatch(pathPoints);
         batchInsertJdbcRepository.saveAllCheckPointsInBatch(checkPoints);
 
+        if (checkPoints.size() != 0) {
+            naviPath.updateCheckPoint(checkPoints.get(0).getPointIndex());
+        }
+
         return createNavigationPathDto(naviPath, pathPoints, checkPoints);
     }
 

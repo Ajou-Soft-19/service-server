@@ -66,7 +66,7 @@ public class OsrmNavigationApi implements NavigationApi {
         try {
             response = webClient.get()
                     .uri(setTableParams(tableRequestUrl, (List<String>) params.get("sources"),
-                            (List<String>) params.get("destinations")))
+                            (List<String>) params.get("destinations"), (List<Double>) params.get("directions")))
                     .retrieve()
                     .toEntity(String.class)
                     .block();
@@ -85,21 +85,35 @@ public class OsrmNavigationApi implements NavigationApi {
         return String.format(requestUrl, start, goal, getSteps);
     }
 
-    private String setTableParams(String requestUrl, List<String> starts, List<String> goals) {
+    private String setTableParams(String requestUrl, List<String> sources, List<String> destinations,
+                                  List<Double> directions) {
         List<String> coordinates = new ArrayList<>();
-        coordinates.addAll(starts);
-        coordinates.addAll(goals);
+        coordinates.addAll(sources);
+        coordinates.addAll(destinations);
         String coordinatesString = String.join(";", coordinates);
 
-        String startPointString = IntStream.rangeClosed(0, starts.size() - 1)
+        String startPointString = IntStream.rangeClosed(0, sources.size() - 1)
                 .mapToObj(Integer::toString)
                 .collect(Collectors.joining(";"));
 
-        String destinationString = IntStream.rangeClosed(starts.size(), starts.size() + goals.size() - 1)
+        String destinationString = IntStream.rangeClosed(sources.size(), sources.size() + destinations.size() - 1)
                 .mapToObj(Integer::toString)
                 .collect(Collectors.joining(";"));
 
-        return String.format(requestUrl, coordinatesString, startPointString, destinationString);
+        String formattedRequestUrl = String.format(requestUrl, coordinatesString, startPointString, destinationString);
+        if (directions == null) {
+            return formattedRequestUrl;
+        }
+
+        if (sources.size() != directions.size()) {
+            throw new IllegalArgumentException("Source size and Direction size are not equal");
+        }
+
+        String bearingsString = directions.stream()
+                .map(direction -> direction + ",20")
+                .collect(Collectors.joining(";"));
+
+        return String.format("%s&bearings=%s", formattedRequestUrl, bearingsString);
     }
 
 }

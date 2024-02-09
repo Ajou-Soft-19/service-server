@@ -38,6 +38,16 @@ public class OsrmTableService {
                 tableQueryResult.getDurations());
     }
 
+    public List<TableQueryResultDto> getTableOfMultiSourceDistanceAndDurationWithHeading(List<String> sources,
+                                                                                         String destination,
+                                                                                         List<Double> directions) {
+        TableApiResponse tableQueryResult = pathProvider.getTableQueryResult(Provider.OSRM,
+                createParams(sources, List.of(destination), directions));
+
+        return createMultiSourceTableQueryResultDto(sources, destination, tableQueryResult.getDistances(),
+                tableQueryResult.getDurations());
+    }
+
     public List<TableQueryResultDto> createMultiDestTableQueryResultDto(String source, List<String> destinations,
                                                                         List<List<Double>> distanceList,
                                                                         List<List<Double>> durationList) {
@@ -67,6 +77,13 @@ public class OsrmTableService {
     }
 
     public Map<String, Object> createParams(List<String> sources, List<String> destinations) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("sources", sources);
+        params.put("destinations", destinations);
+        return params;
+    }
+
+    public Map<String, Object> createParams(List<String> sources, List<String> destinations, List<Double> directions) {
         HashMap<String, Object> params = new HashMap<>();
         params.put("sources", sources);
         params.put("destinations", destinations);

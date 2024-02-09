@@ -15,7 +15,10 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,11 +32,14 @@ public class EmergencyTrackService {
     private final AlertService alertService;
     private final OsrmTableService osrmTableService;
     private final NavigationPathRepository navigationPathRepository;
+    private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     @Value("${emergency.check-point-radius}")
     private double checkPointRadius;
 
-    public void updateCurrentPathPoint(Long naviPathId, Long emergencyEventId, Long curPathIdx) {
+    // TODO: 캐싱을 통해 성능 향상 (2차 캐시 or Reids or ConcurrentHashMap으로 구현)
+    public void updateCurrentPathPoint(Long naviPathId, Long emergencyEventId, Long curPathIdx, Double currentLongitude,
+                                       Double currentLatitude) {
         NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
 
         Long oldPathIdx = navigationPath.getCurrentPathPoint();
@@ -42,47 +48,49 @@ public class EmergencyTrackService {
         log.info("updated pathPoint for vehicleId {} naviPathId {} pathIndex {}",
                 navigationPath.getVehicle().getVehicleId(), navigationPath.getNaviPathId(), curPathIdx);
 
+        Point currentPoint = geometryFactory.createPoint(
+                new Coordinate(currentLongitude, currentLatitude));
+
         alertNextCheckPoint(navigationPath, emergencyEventId, oldPathIdx, curPathIdx,
-                checkPoints);
+                checkPoints, currentPoint);
     }
 
-    // TODO: 다음 체크포인트까지의 경로를 보장하기
-    private void alertNextCheckPoint(NavigationPath navigationPath,
-                                     Long emergencyEventId,
-                                     Long oldPathIdx,
-                                     Long curPathIdx,
-                                     List<CheckPoint> checkPoints) {
+    private void alertNextCheckPoint(NavigationPath navigationPath, Long emergencyEventId,
+                                     Long oldPathIdx, Long curPathIdx,
+                                     List<CheckPoint> checkPoints, Point currentPoint) {
         Optional<CheckPoint> nextCheckPointOptional = findNextCheckPoint(curPathIdx, oldPathIdx,
                 checkPoints);
-        CheckPoint nextCheckPoint;
-        // 체크포인트가 하나도 없는 경우를 처리하기 위한 예외
-        nextCheckPoint = nextCheckPointOptional.orElseGet(() -> checkPoints.stream()
-                .filter(c -> c.getPointIndex() <= curPathIdx)
-                .max(Comparator.comparing(CheckPoint::getPointIndex))
-                .orElse(null));
 
-        if (nextCheckPoint == null) {
+        if (nextCheckPointOptional.isEmpty()) {
             return;
         }
+
+        CheckPoint nextCheckPoint = nextCheckPointOptional.get();
         navigationPath.updateCheckPoint(nextCheckPoint.getPointIndex());
 
         List<PathPointDto> filteredPathPoints = navigationPath.getPathPoints().stream()
                 .filter(p -> filterPathInCheckPoint(curPathIdx, nextCheckPoint, p))
                 .map(PathPointDto::new).toList();
 
-        double duration = calculateDuration(curPathIdx, nextCheckPoint, navigationPath);
+        double duration = calculateDuration(currentPoint, nextCheckPoint);
 
-        alertService.alertNextCheckPoint(navigationPath, emergencyEventId, filteredPathPoints, nextCheckPoint, duration,
-                navigationPath.getVehicle().getLicenceNumber(), navigationPath.getVehicle().getVehicleType());
+        alertService.alertNextCheckPoint(navigationPath, emergencyEventId, filteredPathPoints, nextCheckPoint,
+                currentPoint, duration, navigationPath.getVehicle().getLicenceNumber(),
+                navigationPath.getVehicle().getVehicleType());
     }
 
     private Optional<CheckPoint> findNextCheckPoint(Long curPathIdx, Long oldPathIdx, List<CheckPoint> checkPoints) {
+        if (checkPoints.size() == 0) {
+            return Optional.empty();
+        }
+
         Optional<CheckPoint> previousCheckPointOptional = checkPoints.stream()
                 .filter(c -> c.getPointIndex() > oldPathIdx && c.getPointIndex() <= curPathIdx)
                 .max(Comparator.comparing(CheckPoint::getPointIndex));
 
         if (previousCheckPointOptional.isEmpty()) {
-            return Optional.empty();
+            return checkPoints.stream()
+                    .min(Comparator.comparing(CheckPoint::getPointIndex));
         }
 
         CheckPoint previousCheckPoint = previousCheckPointOptional.get();
@@ -92,10 +100,9 @@ public class EmergencyTrackService {
                 .min(Comparator.comparing(CheckPoint::getPointIndex));
     }
 
-    private double calculateDuration(Long curPathIdx, CheckPoint nextCheckPoint, NavigationPath navigationPath) {
-        PathPoint curPathPoint = navigationPath.getPathPoints().get(curPathIdx.intValue());
+    private double calculateDuration(Point currentPoint, CheckPoint nextCheckPoint) {
         List<TableQueryResultDto> queryResultDtos = osrmTableService.getTableOfMultiDestDistanceAndDuration(
-                coordinateToString(curPathPoint.getCoordinate()),
+                coordinateToString(currentPoint),
                 List.of(coordinateToString(nextCheckPoint.getCoordinate())));
         TableQueryResultDto tableQueryResultDto = queryResultDtos.get(0);
         return tableQueryResultDto.getDuration();

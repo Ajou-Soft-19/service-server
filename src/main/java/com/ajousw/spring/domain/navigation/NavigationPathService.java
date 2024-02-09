@@ -55,7 +55,6 @@ public class NavigationPathService {
         }
 
         Vehicle vehicle = vehicleStatus.getVehicle();
-        log.info("vehicle Id {}", vehicle.getVehicleId());
         Optional<EmergencyEvent> optionalEmergencyEvent = emergencyEventRepository.findEmergencyEventByVehicle(
                 vehicle);
 
@@ -85,7 +84,6 @@ public class NavigationPathService {
         }
 
         Vehicle vehicle = vehicleStatus.getVehicle();
-        log.info("vehicle Id {}", vehicle.getVehicleId());
         Optional<EmergencyEvent> optionalEmergencyEvent = emergencyEventRepository.findEmergencyEventByVehicle(
                 vehicle);
         if (optionalEmergencyEvent.isEmpty()) {

@@ -7,6 +7,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -58,4 +59,22 @@ public class VehicleStatus {
         this.direction = direction;
         this.lastUpdateTime = lastUpdateTime;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        VehicleStatus that = (VehicleStatus) o;
+        return Objects.equals(vehicleStatusId, that.vehicleStatusId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(vehicleStatusId);
+    }
+
 }
