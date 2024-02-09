@@ -22,6 +22,7 @@ public class NavigationPathDto {
     private Long duration;
     private Long pathPointSize;
     private Long currentPathPoint;
+    private Long currentCheckPoint;
     private List<PathPointDto> pathPoint;
     private List<PathGuideDto> pathGuide;
     private List<CheckPointDto> checkPoint;
@@ -39,6 +40,7 @@ public class NavigationPathDto {
         this.distance = navigationPath.getDistance();
         this.duration = navigationPath.getDuration();
         this.currentPathPoint = navigationPath.getCurrentPathPoint();
+        this.currentCheckPoint = navigationPath.getCurrentCheckPoint();
         this.pathPointSize = ((Integer) pathPoints.size()).longValue();
         this.pathGuide = pathGuides;
         this.pathPoint = pathPoints;
@@ -57,6 +59,7 @@ public class NavigationPathDto {
         this.distance = navigationPath.getDistance();
         this.duration = navigationPath.getDuration();
         this.currentPathPoint = navigationPath.getCurrentPathPoint();
+        this.currentCheckPoint = navigationPath.getCurrentCheckPoint();
         this.pathPointSize = ((Integer) pathPoints.size()).longValue();
         this.pathPoint = pathPoints;
         this.checkPoint = checkPoints;

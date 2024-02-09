@@ -68,7 +68,7 @@ public class NavigationPathService {
     }
 
     // TODO: 임시 조회 로직
-    public Long getCurrentPathPoint(String email, String vehicleStatusId) {
+    public Long getCurrentCheckPoint(String email, String vehicleStatusId) {
         checkRoleAdmin(email);
         VehicleStatus vehicleStatus = vehicleStatusRepository.findVehicleStatusByVehicleStatusId(vehicleStatusId)
                 .orElseThrow(() -> {
@@ -92,7 +92,7 @@ public class NavigationPathService {
             throw new IllegalStateException("No Emergency Event is Registered for Vehicle");
         }
 
-        return optionalEmergencyEvent.get().getNavigationPath().getCurrentPathPoint();
+        return optionalEmergencyEvent.get().getNavigationPath().getCurrentCheckPoint();
     }
 
     // 권한 체크

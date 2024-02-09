@@ -86,12 +86,12 @@ public class AdminController {
     }
 
     /* 응급 상황인 차량의 경로 조회 */
-    @PostMapping("/monit/vehicle-status/emergency/currentPoint")
+    @PostMapping("/monit/vehicle-status/emergency/currentCheckPoint")
     public ApiResponseJson getNavigationPathPointByVehicleStatusId(@AuthenticationPrincipal UserPrinciple user,
                                                                    @Valid @RequestBody NavigationPathRequestDto navigationPathRequestDto) {
-        Long currentPathPoint = navigationPathService.getCurrentPathPoint(
+        Long currentPathPoint = navigationPathService.getCurrentCheckPoint(
                 user.getEmail(), navigationPathRequestDto.getVehicleStatusId());
-        return new ApiResponseJson(HttpStatus.OK, Map.of("currentPathPoint", currentPathPoint));
+        return new ApiResponseJson(HttpStatus.OK, Map.of("currentCheckPoint", currentPathPoint));
     }
 
     /* 주행중인 모든 차량의 경로 조회 - 응급차량 제외*/

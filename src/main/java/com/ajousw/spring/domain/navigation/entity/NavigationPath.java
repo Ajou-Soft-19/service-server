@@ -70,6 +70,8 @@ public class NavigationPath extends BaseTimeEntity {
 
     private Long currentPathPoint;
 
+    private Long currentCheckPoint;
+
     @OneToMany(mappedBy = "navigationPath", fetch = FetchType.LAZY)
     private final List<PathPoint> pathPoints = new ArrayList<>();
 
@@ -96,6 +98,7 @@ public class NavigationPath extends BaseTimeEntity {
         this.distance = distance;
         this.duration = duration;
         this.currentPathPoint = currentPathPoint;
+        this.currentCheckPoint = 0L;
         this.pathPointSize = pathPointSize;
     }
 
@@ -104,17 +107,17 @@ public class NavigationPath extends BaseTimeEntity {
             throw new IllegalArgumentException(String.format("Wrong Index Range Not in [0 ~ %d]", pathPointSize - 1));
         }
 
-        // TODO: 오류 처리?
         if (this.currentPathPoint >= currentIdx) {
-//            throw new IllegalArgumentException(
-//                    String.format("Index Moving Backward, Correct Range [%d ~ %d]", currentIdx + 1, pathPointSize - 1));
             return;
         }
 
         this.currentPathPoint = currentIdx;
     }
 
-    public void addCheckPoints(List<CheckPoint> checkPoints) {
-        this.checkPoints.addAll(checkPoints);
+    public void updateCheckPoint(Long currentIdx) {
+        if (this.currentCheckPoint >= currentIdx) {
+            return;
+        }
+        this.currentCheckPoint = currentIdx;
     }
 }
