@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BroadcastDto {
 
+    Long vehicleId;
+
     Set<String> targetSession;
 
     Object data;

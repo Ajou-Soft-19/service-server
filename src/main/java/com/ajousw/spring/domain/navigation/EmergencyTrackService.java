@@ -41,21 +41,22 @@ public class EmergencyTrackService {
     public void updateCurrentPathPoint(Long naviPathId, Long emergencyEventId, Long curPathIdx, Double currentLongitude,
                                        Double currentLatitude) {
         NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
+        Long vehicleId = navigationPath.getVehicle().getVehicleId();
 
         Long oldPathIdx = navigationPath.getCurrentPathPoint();
         List<CheckPoint> checkPoints = navigationPath.getCheckPoints();
         navigationPath.updateCurrentPathPoint(curPathIdx);
+
         log.info("updated pathPoint for vehicleId {} naviPathId {} pathIndex {}",
-                navigationPath.getVehicle().getVehicleId(), navigationPath.getNaviPathId(), curPathIdx);
+                vehicleId, navigationPath.getNaviPathId(), curPathIdx);
 
         Point currentPoint = geometryFactory.createPoint(
                 new Coordinate(currentLongitude, currentLatitude));
-
-        alertNextCheckPoint(navigationPath, emergencyEventId, oldPathIdx, curPathIdx,
+        alertNextCheckPoint(navigationPath, emergencyEventId, vehicleId, oldPathIdx, curPathIdx,
                 checkPoints, currentPoint);
     }
 
-    private void alertNextCheckPoint(NavigationPath navigationPath, Long emergencyEventId,
+    private void alertNextCheckPoint(NavigationPath navigationPath, Long emergencyEventId, Long vehicleId,
                                      Long oldPathIdx, Long curPathIdx,
                                      List<CheckPoint> checkPoints, Point currentPoint) {
         Optional<CheckPoint> nextCheckPointOptional = findNextCheckPoint(curPathIdx, oldPathIdx,
@@ -74,7 +75,8 @@ public class EmergencyTrackService {
 
         double duration = calculateDuration(currentPoint, nextCheckPoint);
 
-        alertService.alertNextCheckPoint(navigationPath, emergencyEventId, filteredPathPoints, nextCheckPoint,
+        alertService.alertNextCheckPoint(navigationPath, emergencyEventId, vehicleId, filteredPathPoints,
+                nextCheckPoint,
                 currentPoint, duration, navigationPath.getVehicle().getLicenceNumber(),
                 navigationPath.getVehicle().getVehicleType());
     }

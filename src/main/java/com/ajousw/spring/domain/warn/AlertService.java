@@ -54,7 +54,7 @@ public class AlertService {
 
     @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void alertNextCheckPoint(NavigationPath emergencyPath, Long emergencyEventId,
+    public void alertNextCheckPoint(NavigationPath emergencyPath, Long emergencyEventId, Long vehicleId,
                                     List<PathPointDto> filteredPathPoints,
                                     CheckPoint nextCheckPoint, Point currentPoint, double duration,
                                     String licenceNumber,
@@ -69,14 +69,19 @@ public class AlertService {
             log.info("No Such Emergency Event for NaviPathId {}", emergencyPath.getNaviPathId());
             return;
         }
-
         EmergencyEvent emergencyEvent = eventOpt.get();
+
         List<VehicleStatus> targetVehicleStatus = filterVehicleStatusToBroadCast(
                 emergencyEventId, currentPoint, nextCheckPoint, duration);
 
-        broadCastAlert(emergencyPath, emergencyEventId, filteredPathPoints, nextCheckPoint, licenceNumber, vehicleType,
-                uuid, targetVehicleStatus);
-        addWarnRecord(uuid, emergencyEvent, nextCheckPoint.getPointIndex(), targetVehicleStatus);
+        if (targetVehicleStatus.size() != 0) {
+            broadCastAlert(emergencyPath, emergencyEventId, vehicleId, filteredPathPoints, nextCheckPoint,
+                    licenceNumber,
+                    vehicleType,
+                    uuid, targetVehicleStatus);
+
+            addWarnRecord(uuid, emergencyEvent, nextCheckPoint.getPointIndex(), targetVehicleStatus);
+        }
         log.info("<{}> Warn ended {}ms", uuid, System.currentTimeMillis() - startTime);
     }
 
@@ -92,7 +97,7 @@ public class AlertService {
                 .toList();
     }
 
-    private void broadCastAlert(NavigationPath emergencyPath, Long emergencyEventId,
+    private void broadCastAlert(NavigationPath emergencyPath, Long emergencyEventId, Long vehicleId,
                                 List<PathPointDto> filteredPathPoints,
                                 CheckPoint nextCheckPoint, String licenceNumber, VehicleType vehicleType, String uuid,
                                 List<VehicleStatus> targetVehicleStatus) {
@@ -102,7 +107,7 @@ public class AlertService {
         AlertDto alertDto = new AlertDto(emergencyEventId, nextCheckPoint.getPointIndex(), licenceNumber, vehicleType,
                 emergencyPath.getCurrentPathPoint(), filteredPathPoints);
 
-        redisMessagePublisher.publishAlertMessageToSocket(new BroadcastDto(targetSession, alertDto));
+        redisMessagePublisher.publishAlertMessageToSocket(new BroadcastDto(vehicleId, targetSession, alertDto));
         log.info("<{}> Alert Broadcast to {} vehicles", uuid, targetVehicleStatus.size());
     }
 
