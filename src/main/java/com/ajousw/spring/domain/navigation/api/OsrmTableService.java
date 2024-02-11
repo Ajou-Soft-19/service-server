@@ -1,8 +1,8 @@
-package com.ajousw.spring.domain.navigation.route;
+package com.ajousw.spring.domain.navigation.api;
 
 import com.ajousw.spring.domain.navigation.api.info.table.TableApiResponse;
-import com.ajousw.spring.domain.navigation.api.provider.NavigationPathProvider;
-import com.ajousw.spring.domain.navigation.api.provider.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.NavigationProvider;
+import com.ajousw.spring.domain.navigation.api.provider.factory.Provider;
 import com.ajousw.spring.domain.navigation.dto.TableQueryResultDto;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class OsrmTableService {
 
-    private final NavigationPathProvider pathProvider;
+    private final NavigationProvider pathProvider;
 
     public List<TableQueryResultDto> getTableOfMultiDestDistanceAndDuration(String source, List<String> destinations) {
         TableApiResponse tableQueryResult = pathProvider.getTableQueryResult(Provider.OSRM,

@@ -1,5 +1,6 @@
 package com.ajousw.spring.domain.warn;
 
+import com.ajousw.spring.domain.navigation.api.OsrmTableService;
 import com.ajousw.spring.domain.navigation.dto.AlertDto;
 import com.ajousw.spring.domain.navigation.dto.BroadcastDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
@@ -7,7 +8,6 @@ import com.ajousw.spring.domain.navigation.dto.TableQueryResultDto;
 import com.ajousw.spring.domain.navigation.entity.CheckPoint;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.navigation.entity.repository.BatchInsertJdbcRepository;
-import com.ajousw.spring.domain.navigation.route.OsrmTableService;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;
 import com.ajousw.spring.domain.vehicle.entity.VehicleType;
 import com.ajousw.spring.domain.vehicle.entity.repository.VehicleStatusRepository;
@@ -211,7 +211,6 @@ public class AlertService {
         for (int i = 0; i < resultDtos.size(); i++) {
             TableQueryResultDto resultDto = resultDtos.get(i);
             if (resultDto.getDistance() <= distance) {
-                log.info("In Danger Zone");
                 targetVehicleStatus.add(vehiclesNotInTargetStatus.get(i));
             }
         }

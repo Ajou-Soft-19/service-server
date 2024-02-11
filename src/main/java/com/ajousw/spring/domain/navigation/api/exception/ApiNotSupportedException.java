@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.navigation.exception;
+package com.ajousw.spring.domain.navigation.api.exception;
 
 public class ApiNotSupportedException extends RuntimeException {
     public ApiNotSupportedException(String message) {

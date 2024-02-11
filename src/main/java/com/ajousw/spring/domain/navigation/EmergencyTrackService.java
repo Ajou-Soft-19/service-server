@@ -1,5 +1,6 @@
 package com.ajousw.spring.domain.navigation;
 
+import com.ajousw.spring.domain.navigation.api.OsrmTableService;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
 import com.ajousw.spring.domain.navigation.dto.TableQueryResultDto;
 import com.ajousw.spring.domain.navigation.entity.CheckPoint;
@@ -7,7 +8,6 @@ import com.ajousw.spring.domain.navigation.entity.MapLocation;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.navigation.entity.PathPoint;
 import com.ajousw.spring.domain.navigation.entity.repository.NavigationPathRepository;
-import com.ajousw.spring.domain.navigation.route.OsrmTableService;
 import com.ajousw.spring.domain.warn.AlertService;
 import com.ajousw.spring.domain.warn.util.CoordinateUtil;
 import java.util.Comparator;

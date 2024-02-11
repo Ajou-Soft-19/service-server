@@ -4,8 +4,8 @@ import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
 import com.ajousw.spring.domain.navigation.api.info.route.Coordinate;
 import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
-import com.ajousw.spring.domain.navigation.api.provider.NavigationPathProvider;
-import com.ajousw.spring.domain.navigation.api.provider.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.NavigationProvider;
+import com.ajousw.spring.domain.navigation.api.provider.factory.Provider;
 import com.ajousw.spring.domain.navigation.dto.CheckPointDto;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
@@ -38,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class EmergencyNavigationService {
-    private final NavigationPathProvider pathProvider;
+    private final NavigationProvider pathProvider;
     private final VehicleRepository vehicleRepository;
     private final MemberJpaRepository memberRepository;
     private final PathPointRepository pathPointRepository;

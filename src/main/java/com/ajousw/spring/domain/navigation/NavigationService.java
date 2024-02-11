@@ -3,8 +3,8 @@ package com.ajousw.spring.domain.navigation;
 import com.ajousw.spring.domain.navigation.api.info.route.Coordinate;
 import com.ajousw.spring.domain.navigation.api.info.route.Guide;
 import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
-import com.ajousw.spring.domain.navigation.api.provider.NavigationPathProvider;
-import com.ajousw.spring.domain.navigation.api.provider.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.NavigationProvider;
+import com.ajousw.spring.domain.navigation.api.provider.factory.Provider;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import com.ajousw.spring.domain.navigation.dto.PathGuideDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 @RequiredArgsConstructor
 public class NavigationService {
-    private final NavigationPathProvider pathProvider;
+    private final NavigationProvider pathProvider;
     private final GeometryFactory geometryFactory = new GeometryFactory(new PrecisionModel(), 4326);
 
     public NavigationPathDto getNavigationPath(Provider provider, Map<String, String> params,

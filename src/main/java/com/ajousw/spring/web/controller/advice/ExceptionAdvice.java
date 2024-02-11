@@ -1,7 +1,7 @@
 package com.ajousw.spring.web.controller.advice;
 
-import com.ajousw.spring.domain.navigation.exception.ApiNotSupportedException;
-import com.ajousw.spring.domain.navigation.exception.BadApiResponseException;
+import com.ajousw.spring.domain.navigation.api.exception.ApiNotSupportedException;
+import com.ajousw.spring.domain.navigation.api.exception.BadApiResponseException;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import com.ajousw.spring.web.controller.json.ResponseStatusCode;
 import java.util.Map;

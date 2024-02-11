@@ -1,4 +1,4 @@
-package com.ajousw.spring.domain.navigation.exception;
+package com.ajousw.spring.domain.navigation.api.exception;
 
 public class BadApiResponseException extends RuntimeException {
     public BadApiResponseException(String message) {

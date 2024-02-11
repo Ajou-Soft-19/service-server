@@ -1,8 +1,10 @@
 package com.ajousw.spring.domain.navigation.api.provider;
 
-import com.ajousw.spring.domain.navigation.api.NavigationApiFactory;
 import com.ajousw.spring.domain.navigation.api.info.route.NavigationApiResponse;
 import com.ajousw.spring.domain.navigation.api.info.table.TableApiResponse;
+import com.ajousw.spring.domain.navigation.api.provider.factory.NavigationApi;
+import com.ajousw.spring.domain.navigation.api.provider.factory.NavigationApiFactory;
+import com.ajousw.spring.domain.navigation.api.provider.factory.Provider;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class NavigationPathProvider {
+public class NavigationProvider {
 
     private ObjectMapper mapper;
     private final NavigationApiFactory navigationApiFactory;

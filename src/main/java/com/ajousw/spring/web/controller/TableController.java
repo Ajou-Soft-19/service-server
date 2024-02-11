@@ -1,7 +1,7 @@
 package com.ajousw.spring.web.controller;
 
+import com.ajousw.spring.domain.navigation.api.OsrmTableService;
 import com.ajousw.spring.domain.navigation.dto.TableQueryResultDto;
-import com.ajousw.spring.domain.navigation.route.OsrmTableService;
 import com.ajousw.spring.web.controller.dto.navigation.TableQueryDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import jakarta.validation.Valid;

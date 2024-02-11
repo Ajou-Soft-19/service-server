@@ -1,8 +1,8 @@
 package com.ajousw.spring.domain.navigation.api.provider.impl;
 
-import com.ajousw.spring.domain.navigation.api.provider.NavigationApi;
-import com.ajousw.spring.domain.navigation.exception.ApiNotSupportedException;
-import com.ajousw.spring.domain.navigation.exception.BadApiResponseException;
+import com.ajousw.spring.domain.navigation.api.exception.ApiNotSupportedException;
+import com.ajousw.spring.domain.navigation.api.exception.BadApiResponseException;
+import com.ajousw.spring.domain.navigation.api.provider.factory.NavigationApi;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
 import lombok.Getter;

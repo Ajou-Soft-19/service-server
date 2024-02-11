@@ -1,8 +1,8 @@
-package com.ajousw.spring.domain.navigation.route;
+package com.ajousw.spring.domain.navigation.api;
 
 import com.ajousw.spring.domain.navigation.EmergencyNavigationService;
 import com.ajousw.spring.domain.navigation.NavigationService;
-import com.ajousw.spring.domain.navigation.api.provider.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.factory.Provider;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
 import java.util.HashMap;
 import java.util.Map;

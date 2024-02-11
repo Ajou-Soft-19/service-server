@@ -1,6 +1,6 @@
 package com.ajousw.spring.web.controller.dto.navigationPath;
 
-import com.ajousw.spring.domain.navigation.api.provider.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.factory.Provider;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.vehicle.entity.VehicleStatus;

@@ -1,6 +1,6 @@
 package com.ajousw.spring.domain.navigation.dto;
 
-import com.ajousw.spring.domain.navigation.api.provider.Provider;
+import com.ajousw.spring.domain.navigation.api.provider.factory.Provider;
 import com.ajousw.spring.domain.navigation.entity.MapLocation;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import java.util.List;
