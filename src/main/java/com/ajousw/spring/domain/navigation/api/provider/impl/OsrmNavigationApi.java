@@ -110,8 +110,9 @@ public class OsrmNavigationApi implements NavigationApi {
         }
 
         String bearingsString = directions.stream()
-                .map(direction -> direction + ",20")
+                .map(direction -> Math.round(direction) + ",20")
                 .collect(Collectors.joining(";"));
+        bearingsString += ";".repeat(destinations.size());
 
         return String.format("%s&bearings=%s", formattedRequestUrl, bearingsString);
     }

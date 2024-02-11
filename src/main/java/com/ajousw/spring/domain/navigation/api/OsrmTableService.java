@@ -87,6 +87,7 @@ public class OsrmTableService {
         HashMap<String, Object> params = new HashMap<>();
         params.put("sources", sources);
         params.put("destinations", destinations);
+        params.put("directions", directions);
         return params;
     }
 }

@@ -1,6 +1,7 @@
 package com.ajousw.spring.domain.warn;
 
 import com.ajousw.spring.domain.navigation.api.OsrmTableService;
+import com.ajousw.spring.domain.navigation.api.exception.BadApiResponseException;
 import com.ajousw.spring.domain.navigation.dto.AlertDto;
 import com.ajousw.spring.domain.navigation.dto.BroadcastDto;
 import com.ajousw.spring.domain.navigation.dto.PathPointDto;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = BadApiResponseException.class)
 public class AlertService {
 
     private final BatchInsertJdbcRepository batchInsertJdbcRepository;
@@ -53,7 +55,6 @@ public class AlertService {
     private double dangerZoneDistance;
 
     @Async
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void alertNextCheckPoint(NavigationPath emergencyPath, Long emergencyEventId, Long vehicleId,
                                     List<PathPointDto> filteredPathPoints,
                                     CheckPoint nextCheckPoint, Point currentPoint, double duration,
@@ -186,7 +187,7 @@ public class AlertService {
                                                 List<VehicleStatus> targetVehicleStatus) {
         List<VehicleStatus> vehiclesNotInTargetStatus = getVehiclesNotInTargetStatus(vehicleNotUsingNavi,
                 targetVehicleStatus);
-        log.info("Target Vehicle size {}", vehiclesNotInTargetStatus.size());
+        //log.info("Target Vehicle size {}", vehiclesNotInTargetStatus.size());
 
         if (vehiclesNotInTargetStatus.size() == 0) {
             return;
