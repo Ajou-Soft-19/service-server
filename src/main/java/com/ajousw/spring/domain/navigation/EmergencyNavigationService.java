@@ -176,7 +176,7 @@ public class EmergencyNavigationService {
      * 주어진 경로 포인트 리스트에서 wayPointDistance 간격으로 체크포인트를 계산합니다.
      * <p>
      * 이 메소드는 주어진 {@code PathPoint} 리스트를 순회하며 각 포인트 사이의 거리를 누적합니다. 누적 거리가 wayPointDistance 이상이 될 때마다 해당 포인트를 체크포인트로
-     * 선정하고, 체크포인트 리스트에 추가합니다. 누적 거리는 체크포인트를 추가한 후 0으로 재설정됩니다. 첫 포인트와 마지막 포인트는 무시합니다.
+     * 선정하고, 체크포인트 리스트에 추가합니다. 누적 거리는 체크포인트를 추가한 후 0으로 재설정됩니다. 첫 포인트는 무시합니다.
      * </p>
      *
      * @param pathPoints {@code PathPoint} 객체의 리스트
@@ -190,7 +190,7 @@ public class EmergencyNavigationService {
 
         List<CheckPoint> checkPoints = new ArrayList<>();
 
-        for (int i = 1; i < pathPoints.size() - 1; i++) {
+        for (int i = 1; i <= pathPoints.size() - 1; i++) {
             PathPoint currentPoint = pathPoints.get(i);
             double currentLat = currentPoint.getCoordinate().getY();
             double currentLon = currentPoint.getCoordinate().getX();
@@ -211,6 +211,13 @@ public class EmergencyNavigationService {
                     new CheckPoint(navigationPath, currentPoint.getCoordinate(),
                             (long) i, accumulatedDistance, 0.0));
             accumulatedDistance = 0;
+        }
+
+        // 마지막은 50m만 넘으면 추가
+        if (accumulatedDistance >= 50) {
+            PathPoint lastPathPoint = pathPoints.get(pathPoints.size() - 1);
+            checkPoints.add(new CheckPoint(navigationPath, lastPathPoint.getCoordinate(), (long) pathPoints.size() - 1,
+                    accumulatedDistance, 0.0));
         }
 
         return checkPoints;

@@ -12,6 +12,7 @@ import com.ajousw.spring.domain.warn.AlertService;
 import com.ajousw.spring.domain.warn.util.CoordinateUtil;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,29 +39,24 @@ public class EmergencyTrackService {
     private double checkPointRadius;
 
     // TODO: 캐싱을 통해 성능 향상 (2차 캐시 or Reids or ConcurrentHashMap으로 구현)
-    public void updateCurrentPathPoint(Long naviPathId, Long emergencyEventId, Long curPathIdx, Double currentLongitude,
-                                       Double currentLatitude) {
+    public void updateCurrentPathPoint(Long naviPathId, Long emergencyEventId, Long curPathIdx,
+                                       Double currentLongitude, Double currentLatitude) {
         NavigationPath navigationPath = findNavigationPathByIdFetchJoin(naviPathId);
         Long vehicleId = navigationPath.getVehicle().getVehicleId();
-
-        Long oldPathIdx = navigationPath.getCurrentPathPoint();
-        List<CheckPoint> checkPoints = navigationPath.getCheckPoints();
         navigationPath.updateCurrentPathPoint(curPathIdx);
-
         log.info("updated pathPoint for vehicleId {} naviPathId {} pathIndex {}",
                 vehicleId, navigationPath.getNaviPathId(), curPathIdx);
 
+        List<CheckPoint> checkPoints = navigationPath.getCheckPoints();
         Point currentPoint = geometryFactory.createPoint(
                 new Coordinate(currentLongitude, currentLatitude));
-        alertNextCheckPoint(navigationPath, emergencyEventId, vehicleId, oldPathIdx, curPathIdx,
-                checkPoints, currentPoint);
+        alertNextCheckPoint(navigationPath, emergencyEventId, vehicleId, curPathIdx, checkPoints, currentPoint);
     }
 
     private void alertNextCheckPoint(NavigationPath navigationPath, Long emergencyEventId, Long vehicleId,
-                                     Long oldPathIdx, Long curPathIdx,
-                                     List<CheckPoint> checkPoints, Point currentPoint) {
-        Optional<CheckPoint> nextCheckPointOptional = findNextCheckPoint(curPathIdx, oldPathIdx,
-                checkPoints);
+                                     Long curPathIdx, List<CheckPoint> checkPoints, Point currentPoint) {
+        Optional<CheckPoint> nextCheckPointOptional = findNextCheckPoint(curPathIdx,
+                navigationPath.getCurrentCheckPoint(), checkPoints);
 
         if (nextCheckPointOptional.isEmpty()) {
             return;
@@ -81,24 +77,16 @@ public class EmergencyTrackService {
                 navigationPath.getVehicle().getVehicleType());
     }
 
-    private Optional<CheckPoint> findNextCheckPoint(Long curPathIdx, Long oldPathIdx, List<CheckPoint> checkPoints) {
-        if (checkPoints.size() == 0) {
-            return Optional.empty();
-        }
-
-        Optional<CheckPoint> previousCheckPointOptional = checkPoints.stream()
-                .filter(c -> c.getPointIndex() > oldPathIdx && c.getPointIndex() <= curPathIdx)
-                .max(Comparator.comparing(CheckPoint::getPointIndex));
-
-        if (previousCheckPointOptional.isEmpty()) {
+    private Optional<CheckPoint> findNextCheckPoint(Long curPathIdx, Long currentCheckPointIdx,
+                                                    List<CheckPoint> checkPoints) {
+        if (curPathIdx < currentCheckPointIdx) {
             return checkPoints.stream()
-                    .min(Comparator.comparing(CheckPoint::getPointIndex));
+                    .filter(c -> Objects.equals(c.getPointIndex(), currentCheckPointIdx))
+                    .findFirst();
         }
-
-        CheckPoint previousCheckPoint = previousCheckPointOptional.get();
 
         return checkPoints.stream()
-                .filter(c -> c.getPointIndex() > previousCheckPoint.getPointIndex())
+                .filter(c -> c.getPointIndex() > curPathIdx)
                 .min(Comparator.comparing(CheckPoint::getPointIndex));
     }
 
