@@ -58,8 +58,7 @@ public class AlertService {
     public void alertNextCheckPoint(NavigationPath emergencyPath, Long emergencyEventId, Long vehicleId,
                                     List<PathPointDto> filteredPathPoints,
                                     CheckPoint nextCheckPoint, Point currentPoint, double duration,
-                                    String licenceNumber,
-                                    VehicleType vehicleType) {
+                                    String licenceNumber, VehicleType vehicleType) {
         long startTime = System.currentTimeMillis();
         String uuid = UUID.randomUUID().toString();
         log.info("<{}> Alert Request of {} with pathId {}", uuid, licenceNumber, emergencyPath.getNaviPathId());
@@ -72,8 +71,8 @@ public class AlertService {
         }
         EmergencyEvent emergencyEvent = eventOpt.get();
 
-        List<VehicleStatus> targetVehicleStatus = filterVehicleStatusToBroadCast(
-                emergencyEventId, currentPoint, nextCheckPoint, duration);
+        List<VehicleStatus> targetVehicleStatus = filterVehicleStatusToBroadCast(emergencyEventId, currentPoint,
+                nextCheckPoint, duration, vehicleId);
 
         if (targetVehicleStatus.size() != 0) {
             broadCastAlert(emergencyPath, emergencyEventId, vehicleId, filteredPathPoints, nextCheckPoint,
@@ -86,13 +85,13 @@ public class AlertService {
         log.info("<{}> Warn ended {}ms", uuid, System.currentTimeMillis() - startTime);
     }
 
-    private List<VehicleStatus> filterVehicleStatusToBroadCast(Long emergencyEventId,
-                                                               Point currentPoint,
-                                                               CheckPoint nextCheckPoint, double duration) {
+    private List<VehicleStatus> filterVehicleStatusToBroadCast(Long emergencyEventId, Point currentPoint,
+                                                               CheckPoint nextCheckPoint, double duration,
+                                                               Long vehicleId) {
         List<String> sessionIdAlreadyWarned = warnRecordRepository.findSessionIdByEmergencyEventIdAndCheckPointIndex(
                 emergencyEventId, nextCheckPoint.getPointIndex());
 
-        return filterTargetSession(nextCheckPoint, currentPoint, duration)
+        return filterTargetSession(nextCheckPoint, currentPoint, duration, vehicleId)
                 .stream()
                 .filter(vehicleStatus -> !sessionIdAlreadyWarned.contains(vehicleStatus.getVehicleStatusId()))
                 .toList();
@@ -132,9 +131,11 @@ public class AlertService {
      * @param duration       응급 차량이 다음 체크포인트에 도달하기 까지의 시간
      * @return 1. 네비게이션 사용 중인 차량 -> 포함 2. 네비게이션 사용 중이지 않은 차량 -> 시간 내에 도달 가능한 차량만 포함 (거리상으론 가깝지만, 도로 상으론 멀리 떨어진 차량 필터링)
      */
-    List<VehicleStatus> filterTargetSession(CheckPoint nextCheckPoint, Point currentPoint, double duration) {
-        List<VehicleStatus> vehicleStatusInRange = vehicleStatusRepository.findAllWithinRadius(
-                nextCheckPoint.getCoordinate().getX(), nextCheckPoint.getCoordinate().getY(), checkPointRadius);
+    List<VehicleStatus> filterTargetSession(CheckPoint nextCheckPoint, Point currentPoint, double duration,
+                                            Long vehicleId) {
+        List<VehicleStatus> vehicleStatusInRange = vehicleStatusRepository.findAllWithinRadiusWithoutVehicleId(
+                nextCheckPoint.getCoordinate().getX(), nextCheckPoint.getCoordinate().getY(),
+                checkPointRadius, vehicleId);
 
         // 네비게이션을 사용하는 차량 포함
         List<VehicleStatus> vehicleUsingNavi = vehicleStatusInRange.stream()

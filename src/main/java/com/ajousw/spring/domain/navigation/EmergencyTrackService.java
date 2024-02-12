@@ -72,8 +72,7 @@ public class EmergencyTrackService {
         double duration = calculateDuration(currentPoint, nextCheckPoint);
 
         alertService.alertNextCheckPoint(navigationPath, emergencyEventId, vehicleId, filteredPathPoints,
-                nextCheckPoint,
-                currentPoint, duration, navigationPath.getVehicle().getLicenceNumber(),
+                nextCheckPoint, currentPoint, duration, navigationPath.getVehicle().getLicenceNumber(),
                 navigationPath.getVehicle().getVehicleType());
     }
 

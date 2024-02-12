@@ -19,11 +19,18 @@ public interface VehicleStatusRepository extends JpaRepository<VehicleStatus, UU
      * @param radius    검색 반경(미터 단위)
      * @return 중심 좌표로 부터 radius 안에 있는 VehicleStatus
      */
-
     @Query("select vs from VehicleStatus vs where "
             + "ST_DWithin(vs.coordinate, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :radius, false) = true and vs.coordinate!=null")
     List<VehicleStatus> findAllWithinRadius(@Param("lon") double longitude, @Param("lat") double latitude,
                                             @Param("radius") double radius);
+
+    @Query("select vs from VehicleStatus vs where "
+            + "ST_DWithin(vs.coordinate, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :radius, false) = true "
+            + "and vs.coordinate!=null and (vs.vehicle.vehicleId is null or vs.vehicle.vehicleId!=:vehicleId)")
+    List<VehicleStatus> findAllWithinRadiusWithoutVehicleId(@Param("lon") double longitude,
+                                                            @Param("lat") double latitude,
+                                                            @Param("radius") double radius,
+                                                            @Param("vehicleId") Long vehicleId);
 
     @Query("select vs from VehicleStatus vs left join fetch vs.vehicle where "
             + "ST_DWithin(vs.coordinate, ST_SetSRID(ST_MakePoint(:lon, :lat), 4326), :radius, false) = true and vs.coordinate!=null")
