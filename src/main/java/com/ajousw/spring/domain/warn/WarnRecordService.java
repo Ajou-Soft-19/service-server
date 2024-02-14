@@ -7,19 +7,21 @@ import com.ajousw.spring.domain.warn.entity.EmergencyEvent;
 import com.ajousw.spring.domain.warn.entity.WarnRecord;
 import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.domain.warn.entity.repository.WarnRecordRepository;
-
 import com.ajousw.spring.web.controller.dto.warm.WarnInfo;
 import com.ajousw.spring.web.controller.dto.warm.WarnListEmergencyRequestDto;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,12 +39,14 @@ public class WarnRecordService {
 
     public List<WarnInfo> getWarnList(String email, WarnListEmergencyRequestDto warnListEmergencyRequestDto) {
         validateAdminRole(email);
-        if (warnListEmergencyRequestDto.getCheckPointIndex() == null && warnListEmergencyRequestDto.getEmergencyEventId() == null) {
+        if (warnListEmergencyRequestDto.getCheckPointIndex() == null
+                && warnListEmergencyRequestDto.getEmergencyEventId() == null) {
             return getWarnList();
-        } else if(warnListEmergencyRequestDto.getCheckPointIndex() == null) {
+        } else if (warnListEmergencyRequestDto.getCheckPointIndex() == null) {
             return getWarnList(warnListEmergencyRequestDto.getEmergencyEventId());
         } else {
-            return getWarnList(warnListEmergencyRequestDto.getEmergencyEventId(), warnListEmergencyRequestDto.getCheckPointIndex());
+            return getWarnList(warnListEmergencyRequestDto.getEmergencyEventId(),
+                    warnListEmergencyRequestDto.getCheckPointIndex());
         }
     }
 
@@ -68,9 +72,9 @@ public class WarnRecordService {
 
     // getWarnList with time and emergencyEventId and checkPointIndex
     public List<WarnInfo> getWarnList(Long emergencyEventId, Long checkPointIndex) {
-        // TODO:
         isEmergencyEventById(emergencyEventId);
-        List<WarnRecord> result = warnRecordRepository.findAllByEmergencyEventIdAndCheckPointIndex(emergencyEventId, checkPointIndex);
+        List<WarnRecord> result = warnRecordRepository.findAllByEmergencyEventIdAndCheckPointIndex(emergencyEventId,
+                checkPointIndex);
         return getWarnInfos(result);
     }
 
@@ -90,15 +94,18 @@ public class WarnRecordService {
                 });
     }
 
-        private List<WarnInfo> getWarnInfos(List<WarnRecord> warnRecords) {
-            Map<Long, WarnInfo> warnInfoMap = new HashMap<Long, WarnInfo>();
-            for (WarnRecord v : warnRecords) {
+    private List<WarnInfo> getWarnInfos(List<WarnRecord> warnRecords) {
+        Map<Long, WarnInfo> warnInfoMap = new HashMap<Long, WarnInfo>();
+        for (WarnRecord v : warnRecords) {
             if (warnInfoMap.containsKey(v.getWarnRecordId().getCheckPointIndex())) {
                 WarnInfo warnInfo = warnInfoMap.get(v.getWarnRecordId().getCheckPointIndex());
                 warnInfo.getSessionIds().add(v.getWarnRecordId().getSessionId());
                 warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(), warnInfo);
             } else {
-                warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(), new WarnInfo(v.getWarnRecordId().getCheckPointIndex(), v.getCreatedDate(), new ArrayList<String>(Collections.singleton(v.getWarnRecordId().getSessionId())),  v.getEmergencyEvent().getEmergencyEventId()));
+                warnInfoMap.put(v.getWarnRecordId().getCheckPointIndex(),
+                        new WarnInfo(v.getWarnRecordId().getCheckPointIndex(), v.getCreatedDate(),
+                                new ArrayList<String>(Collections.singleton(v.getWarnRecordId().getSessionId())),
+                                v.getEmergencyEvent().getEmergencyEventId()));
             }
         }
         return warnInfoMap.values().stream().sorted(Comparator.comparing(WarnInfo::getCheckPointIndex)).toList();

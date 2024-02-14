@@ -66,7 +66,6 @@ public class NavigationPathService {
                 optionalEmergencyEvent.get().getNavigationPath().getNaviPathId());
     }
 
-    // TODO: 임시 조회 로직
     public Long getCurrentCheckPoint(String email, String vehicleStatusId) {
         checkRoleAdmin(email);
         VehicleStatus vehicleStatus = vehicleStatusRepository.findVehicleStatusByVehicleStatusId(vehicleStatusId)

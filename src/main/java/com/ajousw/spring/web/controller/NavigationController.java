@@ -1,6 +1,5 @@
 package com.ajousw.spring.web.controller;
 
-import com.ajousw.spring.domain.member.UserPrinciple;
 import com.ajousw.spring.domain.navigation.api.NaverNavigationService;
 import com.ajousw.spring.domain.navigation.api.OsrmNavigationService;
 import com.ajousw.spring.domain.navigation.dto.NavigationPathDto;
@@ -10,7 +9,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,16 +23,15 @@ public class NavigationController {
 
     @PostMapping("/api/navi/route")
     public ApiResponseJson getOsrmRoute(@Valid @RequestBody NavigationQueryDto navigationQueryDto,
-                                        BindingResult bindingResult,
-                                        @AuthenticationPrincipal UserPrinciple userPrinciple) {
+                                        BindingResult bindingResult) {
         checkBindingResult(bindingResult);
 
         NavigationPathDto navigationPath;
         switch (navigationQueryDto.getProvider()) {
-            case NAVER -> navigationPath = naverNavigationService.getNaverNavigationPath(userPrinciple.getEmail(),
+            case NAVER -> navigationPath = naverNavigationService.getNaverNavigationPath("",
                     null, navigationQueryDto.getSource(), navigationQueryDto.getDest(),
                     navigationQueryDto.getOption(), false);
-            case OSRM -> navigationPath = osrmNavigationService.getOsrmNavigationPath(userPrinciple.getEmail(),
+            case OSRM -> navigationPath = osrmNavigationService.getOsrmNavigationPath("",
                     null, navigationQueryDto.getSource(), navigationQueryDto.getDest(),
                     navigationQueryDto.getOption(), false);
             default -> throw new IllegalArgumentException("아직 지원하지 않는 API 입니다.");

@@ -31,11 +31,13 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = BadApiResponseException.class)
+@Transactional(propagation = Propagation.REQUIRES_NEW, noRollbackFor = {BadApiResponseException.class,
+        WebClientResponseException.class})
 public class AlertService {
 
     private final BatchInsertJdbcRepository batchInsertJdbcRepository;

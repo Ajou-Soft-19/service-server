@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin")
-public class AdminController {
+public class MonitorController {
     private final VehicleStatusService vehicleStatusService;
     private final WarnRecordService warnRecordService;
     private final NavigationPathService navigationPathService;
