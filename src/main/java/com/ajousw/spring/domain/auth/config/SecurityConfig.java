@@ -55,7 +55,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/roles/**").hasRole("ADMIN")
                         .requestMatchers(permitAllUrl).permitAll()
                         .requestMatchers(anonymousUrl).anonymous()
-                        .requestMatchers(emergencyUrl).hasAnyRole("ADMIN", "EMERGENCY")
+                        .requestMatchers(emergencyUrl).hasAnyRole("ADMIN", "EMERGENCY_VEHICLE")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
