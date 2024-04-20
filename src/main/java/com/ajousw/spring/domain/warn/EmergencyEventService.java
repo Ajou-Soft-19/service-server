@@ -1,5 +1,6 @@
 package com.ajousw.spring.domain.warn;
 
+import com.ajousw.spring.domain.dashboard.SupporterCountingService;
 import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.member.enums.Role;
 import com.ajousw.spring.domain.member.repository.MemberJpaRepository;
@@ -13,14 +14,15 @@ import com.ajousw.spring.domain.warn.entity.dto.EmergencyEventDto;
 import com.ajousw.spring.domain.warn.entity.dto.WarnRecordDto;
 import com.ajousw.spring.domain.warn.entity.repository.EmergencyEventRepository;
 import com.ajousw.spring.web.controller.dto.emergency.EmergencyEventCreateDto;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class EmergencyEventService {
 
+    private final SupporterCountingService supporterCountingService;
     private final EmergencyEventRepository emergencyEventRepository;
     private final NavigationPathRepository navigationPathRepository;
     private final MemberJpaRepository memberRepository;
@@ -59,6 +62,7 @@ public class EmergencyEventService {
 
         checkEventOwner(member, event);
         event.endEvent();
+        supporterCountingService.addEmergencyEventSupporterCount(emergencyEventId, event.getNavigationPath().getNaviPathId(), LocalDateTime.now());
     }
 
     @Transactional(readOnly = true)

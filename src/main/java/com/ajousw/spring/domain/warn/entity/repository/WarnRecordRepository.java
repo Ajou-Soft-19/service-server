@@ -1,11 +1,12 @@
 package com.ajousw.spring.domain.warn.entity.repository;
 
 import com.ajousw.spring.domain.warn.entity.WarnRecord;
-import java.time.LocalDateTime;
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 public interface WarnRecordRepository extends JpaRepository<WarnRecord, Long> {
     @Query("select wr from WarnRecord wr where wr.createdDate >= :timeAfter")
@@ -22,4 +23,6 @@ public interface WarnRecordRepository extends JpaRepository<WarnRecord, Long> {
     List<String> findSessionIdByEmergencyEventIdAndCheckPointIndex(@Param("emergencyEventId") Long emergencyEventId,
                                                                    @Param("checkPointIndex") Long checkPointIndex);
 
+    @Query("select count(*) from WarnRecord wr where wr.emergencyEvent.emergencyEventId = :emergencyEventId")
+    Long countByEmergencyEventId(@Param("emergencyEventId") Long emergencyEventId);
 }

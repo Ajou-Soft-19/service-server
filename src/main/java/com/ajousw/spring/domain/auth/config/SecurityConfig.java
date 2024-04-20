@@ -4,7 +4,6 @@ package com.ajousw.spring.domain.auth.config;
 import com.ajousw.spring.domain.auth.jwt.JwtAccessDeniedHandler;
 import com.ajousw.spring.domain.auth.jwt.JwtAuthenticationEntryPoint;
 import com.ajousw.spring.domain.auth.jwt.JwtFilter;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +20,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -31,7 +32,7 @@ public class SecurityConfig {
     private final JwtFilter jwtFilter;
     private final String[] adminUrl = {"/admin/**", "/api/admin"};
     private final String[] emergencyUrl = {"/api/emergency/**"};
-    private final String[] permitAllUrl = {"/error", "/api/navi/route"};
+    private final String[] permitAllUrl = {"/error", "/api/navi/route", "/api/supporter/count"};
     private final String[] anonymousUrl = {"/anonymous"};
     @Value("${verification.encoder-strength}")
     private int encoderStrength;
