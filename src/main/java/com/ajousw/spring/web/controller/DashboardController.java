@@ -2,6 +2,7 @@ package com.ajousw.spring.web.controller;
 
 import com.ajousw.spring.domain.dashboard.SupporterCountDto;
 import com.ajousw.spring.domain.dashboard.SupporterCountingService;
+import com.ajousw.spring.web.controller.dto.dashboard.SupportersDto;
 import com.ajousw.spring.web.controller.json.ApiResponseJson;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +25,9 @@ public class DashboardController {
                                              @RequestParam(value = "month", required = false) Integer month,
                                              @RequestParam(value = "day", required = false) Integer day) {
         List<SupporterCountDto> supporters = supporterCountingService.getSupporters(year, month, day);
+        Long emergencyEventCount = supporterCountingService.getEmergencyEventCount(year, month, day);
 
-        return new ApiResponseJson(HttpStatus.OK, supporters);
+
+        return new ApiResponseJson(HttpStatus.OK, new SupportersDto(emergencyEventCount, supporters));
     }
-
 }

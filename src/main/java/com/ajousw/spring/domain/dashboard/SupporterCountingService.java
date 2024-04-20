@@ -87,6 +87,23 @@ public class SupporterCountingService {
         throw new IllegalArgumentException("Invalid date format");
     }
 
+    public Long getEmergencyEventCount(Integer year, Integer month, Integer day) {
+        isValidDate(year, month, day);
+        if (year != null && month != null && day != null) {
+            return supporterCountRepository.countEmergencyEventsOfDay(year, month, day);
+        } else if (year != null && month != null) {
+            return supporterCountRepository.countEmergencyEventsOfMonth(year, month);
+        } else if (year != null) {
+            return supporterCountRepository.countEmergencyEventsOfYear(year);
+        } else if (year == null && month == null && day == null) {
+            int currentYear = LocalDateTime.now().getYear();
+            int currentMonth = LocalDateTime.now().getMonthValue();
+            return supporterCountRepository.countEmergencyEventsOfMonth(currentYear, currentMonth);
+        }
+
+        throw new IllegalArgumentException("Invalid date format");
+    }
+
     private void isValidDate(Integer year, Integer month, Integer day) {
         try {
             if (year != null && month != null && day != null) {
