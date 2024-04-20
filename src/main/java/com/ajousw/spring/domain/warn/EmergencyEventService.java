@@ -48,7 +48,9 @@ public class EmergencyEventService {
         if (emergencyEventRepository.existsByNavigationPath(path)) {
             throw new IllegalArgumentException("NavigationPath is Already Registered as Emergency Event");
         }
-        emergencyEventRepository.endAllActiveEmergencyEventByVehicleId(LocalDateTime.now(), vehicle);
+        emergencyEventRepository.findActiveEmergencyEventsByVehicle(vehicle)
+                .forEach(e -> endEmergencyEvent(email, e.getEmergencyEventId()));
+        //emergencyEventRepository.endAllActiveEmergencyEventByVehicleId(LocalDateTime.now(), vehicle);
 
         EmergencyEvent emergencyEvent = new EmergencyEvent(path, member, vehicle);
         emergencyEventRepository.save(emergencyEvent);

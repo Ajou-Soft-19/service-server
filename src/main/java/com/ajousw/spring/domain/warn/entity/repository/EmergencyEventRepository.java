@@ -4,13 +4,14 @@ import com.ajousw.spring.domain.member.Member;
 import com.ajousw.spring.domain.navigation.entity.NavigationPath;
 import com.ajousw.spring.domain.vehicle.entity.Vehicle;
 import com.ajousw.spring.domain.warn.entity.EmergencyEvent;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 public interface EmergencyEventRepository extends JpaRepository<EmergencyEvent, Long> {
 
@@ -34,6 +35,9 @@ public interface EmergencyEventRepository extends JpaRepository<EmergencyEvent, 
     boolean existsByNavigationPath(NavigationPath navigationPath);
 
     boolean existsByVehicle(Vehicle vehicle);
+
+    @Query("select ee from EmergencyEvent ee where ee.isActive = true and ee.vehicle = :vehicle")
+    List<EmergencyEvent> findActiveEmergencyEventsByVehicle(@Param("vehicle") Vehicle vehicle);
 
     @Modifying
     @Query("update EmergencyEvent ev set ev.isActive=false, ev.endedDate=:endedDate where ev.vehicle=:vehicle")
