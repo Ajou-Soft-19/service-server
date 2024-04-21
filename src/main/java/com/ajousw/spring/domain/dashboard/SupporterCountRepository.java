@@ -10,16 +10,18 @@ import java.util.List;
 public interface SupporterCountRepository extends JpaRepository<SupporterCount, Long> {
 
     @Query("select new com.ajousw.spring.domain.dashboard.SupporterCountDto(s.region, sum(s.count)) " +
-            "from SupporterCount s where s.year = :year and s.month = :month group by s.region")
+            "from SupporterCount s where s.year = :year and s.month = :month " +
+            "group by s.region order by sum(s.count) desc")
     List<SupporterCountDto> getSupportersOfMonth(@Param("year") int year, @Param("month") int month);
 
     @Query("select new com.ajousw.spring.domain.dashboard.SupporterCountDto(s.region, sum(s.count)) " +
-            "from SupporterCount s where s.year = :year and s.month = :month and s.day = :day group by s.region")
+            "from SupporterCount s where s.year = :year and s.month = :month and s.day = :day " +
+            "group by s.region order by sum(s.count) desc")
     List<SupporterCountDto> getSupportersOfDay(@Param("year") int year, @Param("month") int month, @Param("day") int day);
 
 
     @Query("select new com.ajousw.spring.domain.dashboard.SupporterCountDto(s.region, sum(s.count)) " +
-            "from SupporterCount s where s.year = :year group by s.region")
+            "from SupporterCount s where s.year = :year group by s.region order by sum(s.count) desc")
     List<SupporterCountDto> getSupportersOfYear(@Param("year") int year);
 
 
