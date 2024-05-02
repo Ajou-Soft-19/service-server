@@ -73,18 +73,34 @@ public class SupporterCountingService {
     public List<SupporterCountDto> getSupporters(Integer year, Integer month, Integer day) {
         isValidDate(year, month, day);
         if (year != null && month != null && day != null) {
-            return supporterCountRepository.getSupportersOfDay(year, month, day);
+            return fillEmptyRegion(supporterCountRepository.getSupportersOfDay(year, month, day));
         } else if (year != null && month != null) {
-            return supporterCountRepository.getSupportersOfMonth(year, month);
+            return fillEmptyRegion(supporterCountRepository.getSupportersOfMonth(year, month));
         } else if (year != null) {
-            return supporterCountRepository.getSupportersOfYear(year);
+            return fillEmptyRegion(supporterCountRepository.getSupportersOfYear(year));
         } else if (year == null && month == null && day == null) {
             int currentYear = LocalDateTime.now().getYear();
             int currentMonth = LocalDateTime.now().getMonthValue();
-            return supporterCountRepository.getSupportersOfMonth(currentYear, currentMonth);
+            return fillEmptyRegion(supporterCountRepository.getSupportersOfMonth(currentYear, currentMonth));
         }
 
         throw new IllegalArgumentException("Invalid date format");
+    }
+
+    private List<SupporterCountDto> fillEmptyRegion(List<SupporterCountDto> supporters) {
+        for (Region region : Region.values()) {
+            boolean isExist = false;
+            for (SupporterCountDto supporter : supporters) {
+                if (supporter.getRegion().equals(region)) {
+                    isExist = true;
+                    break;
+                }
+            }
+            if (!isExist) {
+                supporters.add(new SupporterCountDto(region, 0L));
+            }
+        }
+        return supporters;
     }
 
     public Long getEmergencyEventCount(Integer year, Integer month, Integer day) {
